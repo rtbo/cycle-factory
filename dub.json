@@ -1,0 +1,21 @@
+{
+    "name": "cycle-factory",
+    "authors": [
+        "Rémi Thebault"
+    ],
+    "sourcePaths": [
+        "server"
+    ],
+    "dependencies": {
+        "vibe-d": "~>0.7.30"
+    },
+    "libs-posix": [
+        "ssl",
+        "crypto",
+        ":libssl.so.1.0.0",
+        ":libcrypto.so.1.0.0"
+    ],
+    "description": "Cycle Factory back end",
+    "copyright": "Copyright © 2017, Rémi Thebault",
+    "license": "MIT"
+}
