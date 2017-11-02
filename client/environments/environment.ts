@@ -6,4 +6,10 @@
 export const environment = {
     production: false,
     apiEndPoint: "http://localhost:8080/",
+
+    /**
+     * used to make assertions such as de&&mand or de&&bug
+     * elided in production build.
+     */
+    de: true,
 };
