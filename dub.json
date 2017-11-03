@@ -1,5 +1,5 @@
 {
-    "name": "cycle-factory",
+    "name": "gantt-cycle",
     "authors": [
         "Rémi Thebault"
     ],
@@ -15,7 +15,7 @@
         ":libssl.so.1.0.0",
         ":libcrypto.so.1.0.0"
     ],
-    "description": "Cycle Factory back end",
+    "description": "Gantt-Cycle back end",
     "copyright": "Copyright © 2017, Rémi Thebault",
     "license": "MIT"
 }

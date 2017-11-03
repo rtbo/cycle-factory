@@ -1,6 +1,6 @@
 import { AppPage } from './app.po';
 
-describe('cycle-factory App', () => {
+describe('gantt-cycle App', () => {
     let page: AppPage;
 
     beforeEach(() => {

@@ -1,4 +1,4 @@
-# Cycle Factory
+# Gantt Cycle
 
 Gantt charts of manufacturing cycles in a web app.
 
