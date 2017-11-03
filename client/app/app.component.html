@@ -1,18 +1,3 @@
-<!--The content below is only a placeholder and can be replaced.-->
 <div style="text-align:center">
-    <button (click)="cycle.plan()">Plan</button>
-    <table>
-        <th>Task name</th>
-        <th>duration</th>
-        <th>start</th>
-        <th>finish</th>
-        <th>slack</th>
-        <tr *ngFor="let task of cycle.tasks">
-            <td><editable [type]="'text'" [(value)]="task.name"></editable>
-            <td><editable [type]="'number'" [(value)]="task.duration"></editable>
-            <td><span>{{task.earlyStart}}</span></td>
-            <td><span>{{task.earlyFinish}}</span></td>
-            <td><span>{{task.slack}}</span></td>
-        </tr>
-    </table>
+    <task-table></task-table>
 </div>

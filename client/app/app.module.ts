@@ -3,12 +3,16 @@ import { HttpModule } from '@angular/http';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
-import { EditableComponent } from './ui/editable/editable.component';
+import { EditableComponent } from './editable/editable.component';
+import { TaskTableComponent } from './task-table/task-table.component';
+import { TaskBarComponent } from './task-bar/task-bar.component';
 
 @NgModule({
     declarations: [
         AppComponent,
         EditableComponent,
+        TaskTableComponent,
+        TaskBarComponent,
     ],
     imports: [
         BrowserModule,
