@@ -1,24 +1,29 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpModule } from '@angular/http';
+import { FormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { EditableComponent } from './editable/editable.component';
 import { TaskTableComponent } from './task-table/task-table.component';
-import { TaskBarComponent } from './task-bar/task-bar.component';
+import { ToolbarComponent } from './toolbar/toolbar.component';
+import { CycleService } from './services/cycle.service';
+import { GanttCanvasComponent } from './gantt/gantt-canvas/gantt-canvas.component';
 
 @NgModule({
     declarations: [
         AppComponent,
         EditableComponent,
         TaskTableComponent,
-        TaskBarComponent,
+        ToolbarComponent,
+        GanttCanvasComponent,
     ],
     imports: [
         BrowserModule,
-        HttpModule
+        HttpModule,
+        FormsModule,
     ],
-    providers: [],
+    providers: [CycleService],
     bootstrap: [AppComponent]
 })
 export class AppModule { }

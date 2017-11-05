@@ -1,18 +1,20 @@
-<table>
-    <th>Task name</th>
-    <th>duration</th>
-    <th>start</th>
-    <th>finish</th>
-    <th>slack</th>
-    <tr *ngFor="let task of cycle.tasks">
-        <td>
-            <editable [type]="'text'" [(value)]="task.name"></editable>
-        </td>
-        <td>
-            <editable [type]="'number'" [(value)]="task.duration"></editable>
-        </td>
-        <td><span>{{task.earlyStart}}</span></td>
-        <td><span>{{task.earlyFinish}}</span></td>
-        <td><span>{{task.slack}}</span></td>
-    </tr>
+<table class="table table-bordered">
+    <thead class="thead-default">
+        <tr>
+            <th class="text-left">Task name</th>
+            <th class="text-center">duration</th>
+            <th class="text-center">start</th>
+            <th class="text-center">finish</th>
+            <th class="text-center">slack</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let task of cycle.tasks">
+            <td class="text-left">{{task.name}}</td>
+            <td class="text-center">{{task.duration}}</td>
+            <td class="text-center">{{task.earlyStart}}</td>
+            <td class="text-center">{{task.earlyFinish}}</td>
+            <td class="text-center">{{task.slack}}</td>
+        </tr>
+    </tbody>
 </table>

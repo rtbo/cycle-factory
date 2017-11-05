@@ -1,0 +1,13 @@
+#taskbar {
+    margin: 5px;
+}
+.fl-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+}
+#buttonbar {
+    margin: auto;
+    flex: 1;
+}

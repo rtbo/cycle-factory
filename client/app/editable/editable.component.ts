@@ -3,7 +3,7 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { de, mand } from '../debug';
 
 @Component({
-    selector: 'editable',
+    selector: 'gc-editable',
     templateUrl: './editable.component.html',
     styleUrls: ['./editable.component.css']
 })
