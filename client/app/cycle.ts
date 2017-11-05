@@ -116,7 +116,6 @@ export class Task {
     }
 
     set name(value: string) {
-        console.log("setting task name: ", value);
         this._name = value;
     }
 
@@ -125,7 +124,6 @@ export class Task {
     }
 
     set duration(value: number) {
-        console.log("setting duration: ", value);
         this._duration = value;
     }
 
