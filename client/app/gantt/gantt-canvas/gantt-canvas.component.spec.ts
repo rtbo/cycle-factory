@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CycleCanvasComponent } from './cycle-canvas.component';
+import { GanttCanvasComponent } from './gantt-canvas.component';
 
 describe('CycleCanvasComponent', () => {
-  let component: CycleCanvasComponent;
-  let fixture: ComponentFixture<CycleCanvasComponent>;
+  let component: GanttCanvasComponent;
+  let fixture: ComponentFixture<GanttCanvasComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ CycleCanvasComponent ]
+      declarations: [ GanttCanvasComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(CycleCanvasComponent);
+    fixture = TestBed.createComponent(GanttCanvasComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
