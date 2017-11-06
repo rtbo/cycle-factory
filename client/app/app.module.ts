@@ -11,6 +11,7 @@ import { CycleService } from './services/cycle.service';
 import { GanttCanvasComponent } from './gantt/gantt-canvas/gantt-canvas.component';
 import { GanttTimeMapService } from './gantt/gantt-time-map.service';
 import { GanttHeightMapService } from './gantt/gantt-height-map.service';
+import { ContentEditableModelDirective } from './content-editable-model.directive';
 
 @NgModule({
     declarations: [
@@ -19,6 +20,7 @@ import { GanttHeightMapService } from './gantt/gantt-height-map.service';
         TaskTableComponent,
         ToolbarComponent,
         GanttCanvasComponent,
+        ContentEditableModelDirective,
     ],
     imports: [
         BrowserModule,
