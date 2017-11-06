@@ -2,7 +2,7 @@ import { AfterViewChecked, Component, ElementRef, OnInit, ViewChild } from '@ang
 
 import { CycleService } from '../../services/cycle.service';
 import { GanttTimeMapService } from '../gantt-time-map.service';
-import { GanttHeightMapService } from '../gantt-height-map.service';
+import { GanttHeightMapService, TaskRow, HeightMap } from '../gantt-height-map.service';
 
 import { Cycle } from '../../cycle';
 
@@ -32,6 +32,11 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         );
         this.checkCanvasSize();
         this.paintCanvas();
+        this.ganttHeightMapService.heightMapChange.subscribe(
+            (hm: HeightMap) => { if (this.checkCanvasSize()) {
+                this.paintCanvas();
+            }}
+        );
     }
 
     ngAfterViewChecked() {
@@ -41,12 +46,14 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
     }
 
     checkCanvasSize(): boolean {
-        let width = this.canvasRef.nativeElement.clientWidth;
-        let height = this.canvasRef.nativeElement.clientHeight;
+        let width = Math.round(this.canvasRef.nativeElement.clientWidth);
+        let height = Math.round(this.ganttHeightMapService.heightMap.total.height);
 
         if (width != this._canvasWidth || height != this._canvasHeight) {
             this._canvasWidth = width;
             this._canvasHeight = height;
+            this.canvasRef.nativeElement.style.width = ""+width+"px";
+            this.canvasRef.nativeElement.style.height = ""+height+"px";
             this.canvasRef.nativeElement.width = width;
             this.canvasRef.nativeElement.height = height;
             this.ganttTimeMapService.updateCanvasSize(width, height);
@@ -73,8 +80,8 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         const rulerLines = "darkgrey";
         const rulerFg = "black";
 
-        const rulerHeight = heights[0].height;
-        const rulerOffset = heights[0].offset - offset;
+        const rulerHeight = heights.head.height;
+        const rulerOffset = heights.head.offset - offset;
 
         ctx.fillStyle = rulerBg;
         ctx.fillRect(0, rulerOffset-0.5, width, rulerHeight);
@@ -92,12 +99,7 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
             ctx.stroke();
         }
 
-        for (let r of heights[1]) {
-            console.log(r);
-            //ctx.beginPath();
-            //ctx.moveTo(0, r.offset);
-            //ctx.lineTo(width, r.offset);
-            //ctx.stroke();
+        for (let r of heights.tasks) {
             const rectOffset = r.offset - offset;
             ctx.beginPath();
             ctx.moveTo(0, rectOffset + r.height - 0.5);

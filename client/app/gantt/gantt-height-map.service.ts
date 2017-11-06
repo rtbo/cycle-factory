@@ -7,24 +7,33 @@ export class TaskRow {
     height: number;
 }
 
+export class HeightMap {
+    total: TaskRow;
+    head: TaskRow;
+    tasks: TaskRow[];
+}
+
 @Injectable()
 export class GanttHeightMapService {
 
     constructor() {
-        this._heightMap = new BehaviorSubject<[TaskRow, TaskRow[]]>(
-            [{offset: 0, height: 0}, []]
+        this._heightMap = new BehaviorSubject<HeightMap>(
+            {total:{offset:0, height:0}, head:{offset: 0, height: 0}, tasks:[]}
         );
     }
 
-    private _heightMap: BehaviorSubject<[TaskRow, TaskRow[]]>;
+    private _heightMap: BehaviorSubject<HeightMap>;
 
-    updateRows(head: TaskRow, tasks: TaskRow[]) {
-        this._heightMap.next([head, tasks]);
+    updateMap(map: HeightMap) {
+        this._heightMap.next(map);
     }
 
-    get heightMap(): [TaskRow, TaskRow[]] {
+    get heightMap(): HeightMap {
         return this._heightMap.value;
     }
 
+    get heightMapChange(): Observable<HeightMap> {
+        return this._heightMap.asObservable();
+    }
 
 }

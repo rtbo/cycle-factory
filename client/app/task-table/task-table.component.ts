@@ -1,8 +1,8 @@
-import { AfterViewChecked, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, OnChanges, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CycleService } from '../services/cycle.service';
 import { Cycle } from '../cycle';
 
-import { GanttHeightMapService, TaskRow } from '../gantt/gantt-height-map.service';
+import { GanttHeightMapService, TaskRow, HeightMap } from '../gantt/gantt-height-map.service';
 
 
 @Component({
@@ -10,7 +10,7 @@ import { GanttHeightMapService, TaskRow } from '../gantt/gantt-height-map.servic
     templateUrl: './task-table.component.html',
     styleUrls: ['./task-table.component.css']
 })
-export class TaskTableComponent implements OnInit, AfterViewChecked {
+export class TaskTableComponent implements OnInit, AfterViewInit, OnChanges {
 
     constructor(
         private cycleService: CycleService,
@@ -27,7 +27,16 @@ export class TaskTableComponent implements OnInit, AfterViewChecked {
         );
     }
 
-    ngAfterViewChecked() {
+    ngAfterViewInit() {
+        this.checkChangeHeight();
+    }
+
+    ngOnChanges(changes) {
+        this.checkChangeHeight();
+    }
+
+    checkChangeHeight() {
+        const hm = this.ganttHeightMapService.heightMap;
         const thead: Element = this.tableRef.nativeElement.getElementsByTagName("thead")[0];
         const tbody: Element = this.tableRef.nativeElement.getElementsByTagName("tbody")[0];
 
@@ -37,8 +46,6 @@ export class TaskTableComponent implements OnInit, AfterViewChecked {
         let tableRect = this.tableRef.nativeElement.getBoundingClientRect();
         let headRect = headTr.getBoundingClientRect();
         let offset = tableRect.top;
-        console.log(tableRect);
-        console.log(headTr.getBoundingClientRect());
 
         const headRow: TaskRow = {
             offset: headRect.top,
@@ -47,7 +54,6 @@ export class TaskTableComponent implements OnInit, AfterViewChecked {
         const taskRows: TaskRow[] = new Array(bodyTrs.length);
         for(let i=0; i<bodyTrs.length; ++i) {
             let rect = bodyTrs[i].getBoundingClientRect();
-            console.log(rect);
             taskRows[i] = {
                 offset: rect.top,
                 height: rect.height,
@@ -55,7 +61,13 @@ export class TaskTableComponent implements OnInit, AfterViewChecked {
             offset += bodyTrs[i].clientHeight;
         }
 
-        this.ganttHeightMapService.updateRows(headRow, taskRows);
-    }
+        const newHm: HeightMap = {
+            total: { offset: tableRect.top, height: tableRect.height },
+            head: headRow, tasks: taskRows
+        };
 
+        if (hm != newHm) {
+            this.ganttHeightMapService.updateMap(newHm);
+        }
+    }
 }
