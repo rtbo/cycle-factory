@@ -1,6 +1,6 @@
-<table class="table table-bordered">
+<table #tasktable class="table table-bordered">
     <thead class="thead-default">
-        <tr>
+        <tr class="tasktableheader">
             <th class="text-left">Task name</th>
             <th class="text-center">duration</th>
             <th class="text-center">start</th>
@@ -9,7 +9,7 @@
         </tr>
     </thead>
     <tbody>
-        <tr *ngFor="let task of cycle.tasks">
+        <tr class="tasktablerow" *ngFor="let task of cycle.tasks">
             <td class="text-left">{{task.name}}</td>
             <td class="text-center">{{task.duration}}</td>
             <td class="text-center">{{task.earlyStart}}</td>

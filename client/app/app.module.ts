@@ -10,6 +10,7 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
 import { CycleService } from './services/cycle.service';
 import { GanttCanvasComponent } from './gantt/gantt-canvas/gantt-canvas.component';
 import { GanttTimeMapService } from './gantt/gantt-time-map.service';
+import { GanttHeightMapService } from './gantt/gantt-height-map.service';
 
 @NgModule({
     declarations: [
@@ -26,7 +27,8 @@ import { GanttTimeMapService } from './gantt/gantt-time-map.service';
     ],
     providers: [
         CycleService,
-        GanttTimeMapService
+        GanttTimeMapService,
+        GanttHeightMapService
     ],
     bootstrap: [AppComponent]
 })
