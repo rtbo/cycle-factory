@@ -89,6 +89,10 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         ctx.strokeStyle = rulerLines;
         ctx.lineWidth = 1;
         ctx.beginPath();
+        ctx.moveTo(0, 0.5);
+        ctx.lineTo(width, 0.5);
+        ctx.stroke();
+        ctx.beginPath();
         ctx.moveTo(0, rulerOffset+rulerHeight - 0.5);
         ctx.lineTo(width, rulerOffset+rulerHeight - 0.5);
         ctx.stroke();
