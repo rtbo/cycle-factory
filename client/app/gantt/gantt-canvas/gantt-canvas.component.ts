@@ -56,7 +56,7 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
             this.canvasRef.nativeElement.style.height = ""+height+"px";
             this.canvasRef.nativeElement.width = width;
             this.canvasRef.nativeElement.height = height;
-            this.ganttTimeMapService.updateCanvasSize(width, height);
+            this.ganttTimeMapService.updateCanvasWidth(width);
             return true;
         }
         return false;
@@ -92,11 +92,14 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         ctx.moveTo(0, rulerOffset+rulerHeight - 0.5);
         ctx.lineTo(width, rulerOffset+rulerHeight - 0.5);
         ctx.stroke();
+        ctx.fillStyle = rulerFg;
         for (let g of grads) {
             ctx.beginPath();
             ctx.moveTo(g.pos + 0.5, 0);
             ctx.lineTo(g.pos + 0.5, height);
             ctx.stroke();
+
+            ctx.fillText(g.time.toString(), g.pos + 5.5, rulerOffset+rulerHeight - 5.5);
         }
 
         for (let r of heights.tasks) {

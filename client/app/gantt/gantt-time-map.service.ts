@@ -14,19 +14,17 @@ export class TimeGrad {
 @Injectable()
 export class GanttTimeMapService {
 
-    constructor(private cycleService: CycleService) {
-    }
+    constructor(private cycleService: CycleService)
+    {}
 
     cycle: Cycle;
-    _width: number;
-    _height: number;
+    private _width: number;
 
-    _scale: number;
-    _duration: number;
+    private _scale: number;
+    private _duration: number;
 
-    updateCanvasSize(width: number, height: number) {
+    updateCanvasWidth(width: number) {
         this._width = width;
-        this._height = height;
 
         if (!this.cycle) {
             this.cycleService.currentCycleObservable.subscribe(
@@ -55,8 +53,8 @@ export class GanttTimeMapService {
     get grads(): TimeGrad[] {
         let interG = 1;
         let i = 0;
-        if (this.timePos(interG) < minInterGrad) {
-            interG *= interCoefs[0];
+        while (this.timePos(interG) < minInterGrad) {
+            interG *= interCoefs[i];
             if (++i == interCoefs.length) {
                 i = 0;
             }
