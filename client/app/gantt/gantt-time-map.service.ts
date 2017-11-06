@@ -62,7 +62,7 @@ export class GanttTimeMapService {
             }
         }
 
-        const numGrads = 1 + this.posTime(this._width) / interG;
+        const numGrads = Math.round(1 + this.posTime(this._width) / interG);
         let grads: TimeGrad[] = new Array(numGrads);
 
         for (i=0; i<numGrads; ++i) {
