@@ -3,8 +3,7 @@ import { AfterViewChecked, Component, ElementRef, OnInit, ViewChild } from '@ang
 import { CycleService } from '../../services/cycle.service';
 import { GanttTimeMapService } from '../gantt-time-map.service';
 import { GanttHeightMapService, TaskRow, HeightMap } from '../gantt-height-map.service';
-import { GanttHeightMapService, Row, HeightMap } from '../gantt-height-map.service';
-import { PaintInfo, paintRuler } from '../painting';
+import { PaintInfo, paintRuler, paintTask } from '../painting';
 
 import { Cycle } from '../../cycle';
 
@@ -82,5 +81,8 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         };
 
         paintRuler(ctx, pi);
+        for (let i=0; i<this.cycle.tasks.length; ++i) {
+            paintTask(ctx, pi, i, this.cycle.tasks[i]);
+        }
     }
 }
