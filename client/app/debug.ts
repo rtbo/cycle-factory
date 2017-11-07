@@ -11,3 +11,9 @@ export function bug(message?: string, ...optParams: any[]): void {
     console.log(message, ...optParams);
 }
 
+export function bug_cond(cond: boolean, message?: string, ...optParams: any[]): void {
+    if (cond) {
+        console.log(message, ...optParams);
+    }
+}
+
