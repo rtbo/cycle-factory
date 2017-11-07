@@ -61,11 +61,11 @@ export class GanttTimeMapService {
 
     private _gradsSubject: BehaviorSubject<TimeGrad[]>;
 
-    get map(): TimeMap {
+    get timeMap(): TimeMap {
         return this._mapSubject.value;
     }
 
-    get mapChange(): Observable<TimeMap> {
+    get timeMapChange(): Observable<TimeMap> {
         return this._mapSubject.asObservable();
     }
 
@@ -89,7 +89,7 @@ export class GanttTimeMapService {
     }
 
     zoom(factor: number): void {
-        this.updateScale(this.map.scale * factor);
+        this.updateScale(this.timeMap.scale * factor);
     }
 
     private initMap() {
@@ -100,20 +100,20 @@ export class GanttTimeMapService {
     private buildGrads(): TimeGrad[] {
         let interG = 1;
         let i = 0;
-        while (this.map.timePos(interG) < MIN_INTER_GRADS) {
+        while (this.timeMap.timePos(interG) < MIN_INTER_GRADS) {
             interG *= INTER_COEFS[i];
             if (++i == INTER_COEFS.length) {
                 i = 0;
             }
         }
 
-        const numGrads = Math.round(1 + this.map.posTime(this._width) / interG);
+        const numGrads = Math.round(1 + this.timeMap.posTime(this._width) / interG);
         let grads: TimeGrad[] = new Array(numGrads);
 
         for (i=0; i<numGrads; ++i) {
             let t = i * interG;
             grads[i] = {
-                time: t, pos: Math.round(this.map.timePos(t))
+                time: t, pos: Math.round(this.timeMap.timePos(t))
             };
         }
 
@@ -121,7 +121,7 @@ export class GanttTimeMapService {
     }
 
     private updateScale(scale: number): void {
-        if (scale !== this.map.scale) {
+        if (scale !== this.timeMap.scale) {
             this._mapSubject.next(new TimeMap(scale));
             this._gradsSubject.next(this.buildGrads());
         }

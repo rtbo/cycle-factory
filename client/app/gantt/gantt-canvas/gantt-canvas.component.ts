@@ -2,6 +2,7 @@ import { AfterViewChecked, Component, ElementRef, OnInit, ViewChild } from '@ang
 
 import { CycleService } from '../../services/cycle.service';
 import { GanttTimeMapService } from '../gantt-time-map.service';
+import { GanttHeightMapService, TaskRow, HeightMap } from '../gantt-height-map.service';
 import { GanttHeightMapService, Row, HeightMap } from '../gantt-height-map.service';
 import { PaintInfo, paintRuler } from '../painting';
 
@@ -48,7 +49,7 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
 
     checkCanvasSize(): boolean {
         let width = Math.round(this.canvasRef.nativeElement.clientWidth);
-        let height = Math.round(this.ganttHeightMapService.heightMap.total.height);
+        let height = Math.round(this.ganttHeightMapService.heightMap.totalHeight);
 
         if (width != this._canvasWidth || height != this._canvasHeight) {
             this._canvasWidth = width;
@@ -75,8 +76,8 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         const pi: PaintInfo = {
             canvasWidth: this._canvasWidth,
             canvasHeight: this._canvasHeight,
-            canvasTop: this.canvasRef.nativeElement.getBoundingClientRect().top,
             heightMap: this.ganttHeightMapService.heightMap,
+            timeMap: this.ganttTimeMapService.timeMap,
             timeGrads: this.ganttTimeMapService.grads,
         };
 

@@ -2,15 +2,15 @@ import { Injectable } from '@angular/core';
 
 import { BehaviorSubject, Observable } from 'rxjs';
 
-export class Row {
-    top: number; // relative to view port
+export class TaskRow {
+    top: number;
     height: number;
 }
 
 export class HeightMap {
-    total: Row;
-    head: Row;
-    tasks: Row[];
+    totalHeight: number;
+    headHeight: number;
+    taskRows: TaskRow[];
 }
 
 @Injectable()
@@ -18,7 +18,11 @@ export class GanttHeightMapService {
 
     constructor() {
         this._heightMap = new BehaviorSubject<HeightMap>(
-            {total:{top:0, height:0}, head:{top: 0, height: 0}, tasks:[]}
+            {
+                totalHeight: 0,
+                headHeight: 0,
+                taskRows:[]
+            }
         );
     }
 

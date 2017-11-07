@@ -1,8 +1,9 @@
 import { AfterViewInit, OnChanges, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CycleService } from '../services/cycle.service';
 import { Cycle } from '../cycle';
+import { de, bug_cond, mand } from '../debug';
 
-import { GanttHeightMapService, Row, HeightMap } from '../gantt/gantt-height-map.service';
+import { GanttHeightMapService, TaskRow, HeightMap } from '../gantt/gantt-height-map.service';
 
 
 @Component({
@@ -43,31 +44,31 @@ export class TaskTableComponent implements OnInit, AfterViewInit, OnChanges {
         const headTr = thead.getElementsByTagName("tr")[0];
         const bodyTrs = tbody.getElementsByTagName("tr");
 
-        let tableRect = this.tableRef.nativeElement.getBoundingClientRect();
-        let headRect = headTr.getBoundingClientRect();
-        let offset = tableRect.top;
+        const tableRect = this.tableRef.nativeElement.getBoundingClientRect();
+        const tableTop = tableRect.top;
+        const tableHeight = tableRect.height;
 
-        const headRow: Row = {
-            top: headRect.top,
-            height: headRect.height,
-        };
-        const taskRows: Row[] = new Array(bodyTrs.length);
+        const headRect = headTr.getBoundingClientRect();
+        const headHeight = headRect.height;
+        de && bug_cond(headRect.top !== tableRect.top,
+                       "header start is not zero: %s vs %s",
+                       headRect.top, tableRect.top);
+
+        const taskRows: TaskRow[] = new Array(bodyTrs.length);
         for(let i=0; i<bodyTrs.length; ++i) {
             let rect = bodyTrs[i].getBoundingClientRect();
             taskRows[i] = {
-                top: rect.top,
+                top: rect.top - tableTop,
                 height: rect.height,
             };
-            offset += bodyTrs[i].clientHeight;
         }
 
         const newHm: HeightMap = {
-            total: { top: tableRect.top, height: tableRect.height },
-            head: headRow, tasks: taskRows
+            totalHeight: tableHeight,
+            headHeight: headHeight,
+            taskRows: taskRows
         };
 
-        if (hm != newHm) {
-            this.ganttHeightMapService.updateMap(newHm);
-        }
+        this.ganttHeightMapService.updateMap(newHm);
     }
 }
