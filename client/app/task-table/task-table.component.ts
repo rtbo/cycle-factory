@@ -2,7 +2,7 @@ import { AfterViewInit, OnChanges, Component, ElementRef, OnInit, ViewChild } fr
 import { CycleService } from '../services/cycle.service';
 import { Cycle } from '../cycle';
 
-import { GanttHeightMapService, TaskRow, HeightMap } from '../gantt/gantt-height-map.service';
+import { GanttHeightMapService, Row, HeightMap } from '../gantt/gantt-height-map.service';
 
 
 @Component({
@@ -47,22 +47,22 @@ export class TaskTableComponent implements OnInit, AfterViewInit, OnChanges {
         let headRect = headTr.getBoundingClientRect();
         let offset = tableRect.top;
 
-        const headRow: TaskRow = {
-            offset: headRect.top,
+        const headRow: Row = {
+            top: headRect.top,
             height: headRect.height,
         };
-        const taskRows: TaskRow[] = new Array(bodyTrs.length);
+        const taskRows: Row[] = new Array(bodyTrs.length);
         for(let i=0; i<bodyTrs.length; ++i) {
             let rect = bodyTrs[i].getBoundingClientRect();
             taskRows[i] = {
-                offset: rect.top,
+                top: rect.top,
                 height: rect.height,
             };
             offset += bodyTrs[i].clientHeight;
         }
 
         const newHm: HeightMap = {
-            total: { offset: tableRect.top, height: tableRect.height },
+            total: { top: tableRect.top, height: tableRect.height },
             head: headRow, tasks: taskRows
         };
 
