@@ -1,7 +1,9 @@
 
 import { TimeGrad, TimeMap } from './gantt-time-map.service';
-import { HeightMap } from './gantt-height-map.service';
+import { GanttHeightMap } from './gantt-height-map.service';
 import { Task } from '../cycle';
+
+const CANVAS_BG = "white";
 
 const RULER_BG = "lightgrey";
 const RULER_FG = "darkgrey";
@@ -14,35 +16,42 @@ const TASK_STROKE = "darkblue";
 export class PaintInfo {
     canvasWidth: number;
     canvasHeight: number;
-    heightMap: HeightMap;
+    heightMap: GanttHeightMap;
     timeMap: TimeMap;
     timeGrads: TimeGrad[];
 }
 
+export function paintBackground(ctx: CanvasRenderingContext2D, pi: PaintInfo): void {
+    ctx.fillStyle = CANVAS_BG;
+    ctx.fillRect(0, 0, pi.canvasWidth, pi.canvasHeight);
+}
+
 export function paintRuler(ctx: CanvasRenderingContext2D, pi: PaintInfo): void {
-    const rulerHeight = pi.heightMap.headHeight;
+    const top = Math.round(pi.heightMap.head.top) + 0.5;
+    const bottom = Math.round(pi.heightMap.head.bottom) + 0.5;
+    const canvasBottom = Math.round(pi.heightMap.table.bottom) + 0.5;
 
     ctx.fillStyle = RULER_BG;
-    ctx.fillRect(0, 0.5, pi.canvasWidth, rulerHeight);
+    ctx.fillRect(0, top, pi.canvasWidth, bottom-top);
 
     ctx.strokeStyle = RULER_FG;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(0, 0.5);
-    ctx.lineTo(pi.canvasWidth, 0.5);
+    ctx.moveTo(0, top);
+    ctx.lineTo(pi.canvasWidth, top);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(0, rulerHeight + 0.5);
-    ctx.lineTo(pi.canvasWidth, rulerHeight + 0.5);
+    ctx.moveTo(0, bottom);
+    ctx.lineTo(pi.canvasWidth, bottom);
     ctx.stroke();
     ctx.fillStyle = TEXT_FG;
     for (let g of pi.timeGrads) {
         ctx.beginPath();
-        ctx.moveTo(g.pos + 0.5, 0.5);
-        ctx.lineTo(g.pos + 0.5, pi.canvasHeight);
+        ctx.moveTo(g.pos + 0.5, top);
+        ctx.lineTo(g.pos + 0.5, canvasBottom);
         ctx.stroke();
 
-        ctx.fillText(g.time.toString(), g.pos + 5.5, rulerHeight - 5.5);
+        ctx.fillText(g.time.toString(), g.pos + 5.5, bottom - 5.5);
     }
 }
 

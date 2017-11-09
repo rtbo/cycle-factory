@@ -1,9 +1,11 @@
-import { AfterViewChecked, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+    AfterViewChecked, Component, ElementRef, OnInit, HostListener, ViewChild
+} from '@angular/core';
 
 import { CycleService } from '../../services/cycle.service';
 import { GanttTimeMapService } from '../gantt-time-map.service';
-import { GanttHeightMapService, TaskRow, HeightMap } from '../gantt-height-map.service';
-import { PaintInfo, paintRuler, paintTask } from '../painting';
+import { GanttHeightMapService, VBounds, GanttHeightMap } from '../gantt-height-map.service';
+import { PaintInfo, paintBackground, paintRuler, paintTask } from '../painting';
 
 import { Cycle } from '../../cycle';
 
@@ -23,7 +25,10 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
     cycle: Cycle;
     private _canvasWidth: number;
     private _canvasHeight: number
+    private _canvasTop: number;
 
+    @ViewChild("ganttDiv")
+    divRef: ElementRef;
     @ViewChild("ganttCanvas")
     canvasRef: ElementRef;
 
@@ -34,9 +39,11 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         this.checkCanvasSize();
         this.paintCanvas();
         this.ganttHeightMapService.heightMapChange.subscribe(
-            (hm: HeightMap) => { if (this.checkCanvasSize()) {
-                this.paintCanvas();
-            }}
+            (hm: GanttHeightMap) => {
+                if (this.checkCanvasSize()) {
+                    this.paintCanvas();
+                }
+            }
         );
     }
 
@@ -47,22 +54,35 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
     }
 
     checkCanvasSize(): boolean {
-        let width = Math.round(this.canvasRef.nativeElement.clientWidth);
-        let height = Math.round(this.ganttHeightMapService.heightMap.totalHeight);
+        const divRect = this.divRef.nativeElement.getBoundingClientRect();
+        const canvasRect = this.canvasRef.nativeElement.getBoundingClientRect();
+        const width = divRect.width;
+        const height = this.ganttHeightMapService.heightMap.table.height;
+        const top = canvasRect.top;
+        let res = false;
 
-        if (width != this._canvasWidth || height != this._canvasHeight) {
+        if (width != this._canvasWidth) {
             this._canvasWidth = width;
-            this._canvasHeight = height;
             this.canvasRef.nativeElement.style.width = ""+width+"px";
-            this.canvasRef.nativeElement.style.height = ""+height+"px";
             this.canvasRef.nativeElement.width = width;
-            this.canvasRef.nativeElement.height = height;
             this.ganttTimeMapService.updateCanvasWidth(width);
-            return true;
+            res = true;
         }
-        return false;
+        if (height != this._canvasHeight) {
+            this._canvasHeight = height;
+            this.canvasRef.nativeElement.style.height = ""+height+"px";
+            this.canvasRef.nativeElement.height = height;
+            res = true;
+        }
+        if (top != this._canvasTop) {
+            this._canvasTop = top;
+            this.ganttHeightMapService.updateCanvasTop(top);
+            res = true;
+        }
+        return res;
     }
 
+    @HostListener("window:resize", ["$event"])
     onResize(event) {
         if (this.checkCanvasSize()) {
             this.paintCanvas();
@@ -80,6 +100,7 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
             timeGrads: this.ganttTimeMapService.grads,
         };
 
+        paintBackground(ctx, pi);
         paintRuler(ctx, pi);
         for (let i=0; i<this.cycle.tasks.length; ++i) {
             paintTask(ctx, pi, i, this.cycle.tasks[i]);
