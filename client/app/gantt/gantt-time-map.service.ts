@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
-import { CycleService } from '../services/cycle.service';
-import { Cycle } from "../cycle";
+import { Cycle } from "../model/cycle";
+import { CycleService } from '../model/cycle.service';
 
 const INTER_COEFS = [ 2, 2.5, 2 ]; // 1, 2, 5, 10, 20, 50, ...
 const MIN_INTER_GRADS = 40;

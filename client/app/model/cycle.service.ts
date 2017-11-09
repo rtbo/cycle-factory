@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
-import { Task, Cycle, Link, LinkType } from '../cycle';
+import { Task, Cycle, Link, LinkType } from './cycle';
 
 @Injectable()
 export class CycleService {

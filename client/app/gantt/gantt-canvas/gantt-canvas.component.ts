@@ -2,12 +2,12 @@ import {
     AfterViewChecked, Component, ElementRef, OnInit, HostListener, ViewChild
 } from '@angular/core';
 
-import { CycleService } from '../../services/cycle.service';
 import { GanttTimeMapService } from '../gantt-time-map.service';
 import { GanttHeightMapService, VBounds, GanttHeightMap } from '../gantt-height-map.service';
 import { PaintInfo, paintBackground, paintRuler, paintTask } from '../painting';
 
-import { Cycle } from '../../cycle';
+import { Cycle } from '../../model/cycle';
+import { CycleService } from '../../model/cycle.service';
 
 @Component({
     selector: 'gc-gantt-canvas',

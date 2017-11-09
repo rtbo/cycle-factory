@@ -1,7 +1,7 @@
 
 import { TimeGrad, TimeMap } from './gantt-time-map.service';
 import { GanttHeightMap } from './gantt-height-map.service';
-import { Task } from '../cycle';
+import { Task } from '../model/cycle';
 
 const CANVAS_BG = "white";
 

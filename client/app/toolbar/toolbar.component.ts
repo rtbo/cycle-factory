@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { CycleService } from '../services/cycle.service';
-import { Cycle } from '../cycle';
+import { Cycle } from '../model/cycle';
+import { CycleService } from '../model/cycle.service';
 
 @Component({
     selector: 'gc-toolbar',

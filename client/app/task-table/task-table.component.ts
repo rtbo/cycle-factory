@@ -1,8 +1,8 @@
 import {
     AfterViewInit, OnChanges, Component, ElementRef, OnInit, HostListener, ViewChild
 } from '@angular/core';
-import { CycleService } from '../services/cycle.service';
-import { Cycle } from '../cycle';
+import { Cycle } from '../model/cycle';
+import { CycleService } from '../model/cycle.service';
 
 import { GanttHeightMapService, VBounds, TableVBounds } from '../gantt/gantt-height-map.service';
 
