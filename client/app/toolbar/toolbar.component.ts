@@ -14,7 +14,7 @@ export class ToolbarComponent implements OnInit {
     constructor(private cycleService: CycleService) { }
 
     ngOnInit() {
-        this.cycleService.currentCycleObservable.subscribe(
+        this.cycleService.currentCycleChange.subscribe(
             (cycle: Cycle) => { this.cycle = cycle; }
         );
     }

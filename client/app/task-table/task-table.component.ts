@@ -24,7 +24,7 @@ export class TaskTableComponent implements OnInit, AfterViewInit, OnChanges {
     cycle: Cycle;
 
     ngOnInit() {
-        this.cycleService.currentCycleObservable.subscribe(
+        this.cycleService.currentCycleChange.subscribe(
             (cycle: Cycle) => { this.cycle = cycle; }
         );
     }

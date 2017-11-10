@@ -44,7 +44,7 @@ export class GanttTimeMapService {
             new TimeMap(DEFAULT_WIDTH / DEFAULT_DURATION)  // 800 px for 60 time units
         );
         this._gradsSubject = new BehaviorSubject([]);
-        this.cycleService.currentCycleObservable.subscribe(
+        this.cycleService.currentCycleChange.subscribe(
             (cycle: Cycle) => {
                 this.cycle = cycle;
                 this.initMap();

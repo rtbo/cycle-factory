@@ -33,7 +33,7 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
     canvasRef: ElementRef;
 
     ngOnInit() {
-        this.cycleService.currentCycleObservable.subscribe(
+        this.cycleService.currentCycleChange.subscribe(
             (cycle: Cycle) => { this.cycle = cycle; }
         );
         this.checkCanvasSize();

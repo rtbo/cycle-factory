@@ -22,7 +22,7 @@ export class CycleService {
         this._currentCycle.next(cycle);
     }
 
-    get currentCycleObservable(): Observable<Cycle> {
+    get currentCycleChange(): Observable<Cycle> {
         return this._currentCycle.asObservable();
     }
 
