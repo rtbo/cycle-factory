@@ -18,6 +18,8 @@ export class Link {
     private _from: Task;
     private _to: Task;
 
+    private _event = new EventDispatcher<void>();
+
 
     get type(): LinkType {
         return this._type;
@@ -25,6 +27,7 @@ export class Link {
 
     set type(value: LinkType) {
         this._type = value;
+        this._event.dispatch();
     }
 
     get lag(): number {
@@ -33,6 +36,7 @@ export class Link {
 
     set lag(value: number) {
         this._lag = value;
+        this._event.dispatch();
     }
 
     get from(): Task {
@@ -41,6 +45,10 @@ export class Link {
 
     get to(): Task {
         return this._to;
+    }
+
+    get event(): IEvent<void> {
+        return this._event;
     }
 
     get earlyTimeTo(): number {
@@ -71,6 +79,8 @@ export class Link {
 
 
     static createLink(from: Task, to: Task, type = LinkType.FS, lag = 0): Link {
+        de&&mand(from && from.cycle && to && to.cycle && from.cycle === to.cycle);
+
         let l = new Link;
         l._from = from;
         l._to = to;
@@ -79,6 +89,8 @@ export class Link {
 
         from.linksOut.push(l);
         to.linksIn.push(l);
+
+        from.cycle.pushLink(l);
 
         return l;
     }
@@ -208,10 +220,13 @@ export class Task {
 export class Cycle {
 
     private _name: string;
-    private _tasks: Task[]      = [];
-    private _taskSubscriptions: any[] = [];
-    private _cycleTime: number  = 0;
-    private _planEvent = new EventDispatcher<void>();
+    private _cycleTime: number          = 0;
+    private _tasks: Task[]              = [];
+    private _taskSubscriptions: any[]   = [];
+    private _links: Link[]              = [];
+    private _linkSubscriptions: any[]   = [];
+    private _planInhibit: boolean       = false;
+    private _planEvent                  = new EventDispatcher<void>();
 
 
     get name(): string {
@@ -224,8 +239,8 @@ export class Cycle {
 
 
     get tasks(): Task[] { return this._tasks; }
-    set tasks(tasks: Task[]) { this._tasks = tasks; }
 
+    get links(): Link[] { return this._links; }
 
     get cycleTime(): number {
         return this._cycleTime;
@@ -249,7 +264,27 @@ export class Cycle {
         this._taskSubscriptions.push(subscription);
     }
 
+    pushLink(link: Link) {
+        de && mand(link.from !== undefined && link.to !== undefined);
+        this._links.push(link);
+        this.plan();
+        const subscription = link.event.subscribe(() => {
+            this.plan();
+        });
+        this._linkSubscriptions.push(subscription);
+    }
+
+    get planInhibit(): boolean {
+        return this._planInhibit;
+    }
+
+    set planInhibit(value: boolean) {
+        this._planInhibit = value;
+    }
+
     plan(): void {
+        if (this._planInhibit) return;
+
         for (let t of this.tasks) {
             t.prepareForward(0);
         }
