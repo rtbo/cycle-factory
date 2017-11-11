@@ -1,5 +1,6 @@
 
 import { de, mand } from '../shared/debug';
+import { IEvent, EventDispatcher } from '../shared/event';
 
 /**
  * The type of link.
@@ -99,6 +100,7 @@ export class Task {
     private _lateStart: number      = 0;
     private _lateFinish: number     = 0;
 
+    private _durationEvent = new EventDispatcher<number>();
 
     constructor(cycle: Cycle, name: string = '') {
         this._cycle = cycle;
@@ -125,6 +127,11 @@ export class Task {
 
     set duration(value: number) {
         this._duration = value;
+        this._durationEvent.dispatch(value);
+    }
+
+    get durationEvent(): IEvent<number> {
+        return this._durationEvent;
     }
 
 
@@ -202,7 +209,9 @@ export class Cycle {
 
     private _name: string;
     private _tasks: Task[]      = [];
+    private _taskSubscriptions: any[] = [];
     private _cycleTime: number  = 0;
+    private _planEvent = new EventDispatcher<void>();
 
 
     get name(): string {
@@ -234,6 +243,10 @@ export class Cycle {
     pushTask(task: Task) {
         de && mand(task.cycle === this);
         this._tasks.push(task);
+        const subscription = task.durationEvent.subscribe((number) => {
+            this.plan();
+        });
+        this._taskSubscriptions.push(subscription);
     }
 
     plan(): void {
@@ -253,5 +266,10 @@ export class Cycle {
             start = Math.min(start, t.backwardPlan(null));
         }
         de && mand(start === 0);
+        this._planEvent.dispatch();
+    }
+
+    get planEvent(): IEvent<void> {
+        return this._planEvent;
     }
 }
