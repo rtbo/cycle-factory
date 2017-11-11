@@ -69,7 +69,6 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
 
         if (width != this._canvasWidth) {
             this._canvasWidth = width;
-            this.canvasRef.nativeElement.style.width = ""+width+"px";
             this.canvasRef.nativeElement.width = width;
             this.ganttTimeMapService.updateCanvasWidth(width);
             res = true;
