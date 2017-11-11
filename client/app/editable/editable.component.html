@@ -1,4 +1,0 @@
-<span *ngIf="!editing" (click)="toggleEdit()">{{value}}</span>
-<input *ngIf="editing" #box [value]="value" [type]="type"
-    (keyup.enter)="onEnter(box.value)"
-    (blur)="onEnter(box.value)">

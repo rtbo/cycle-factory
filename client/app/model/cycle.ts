@@ -1,5 +1,5 @@
 
-import { de, mand } from 'debug';
+import { de, mand } from '../shared/debug';
 
 /**
  * The type of link.
