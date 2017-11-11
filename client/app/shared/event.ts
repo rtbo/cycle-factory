@@ -35,5 +35,7 @@ class Subscription<Args> implements ISubscription {
     constructor(private event: IEvent<Args>, private handler: Handler<Args>) {}
     unsubscribe(): void {
         this.event.unsubscribe(this.handler);
+        this.event = undefined;
+        this.handler = undefined;
     }
 }
