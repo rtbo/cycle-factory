@@ -71,6 +71,105 @@ export function paintTask(ctx: CanvasRenderingContext2D,
     ctx.strokeRect(left, top, right-left, bottom-top);
 }
 
+export function paintLink(ctx: CanvasRenderingContext2D,
+                          pi: PaintInfo,
+                          l: Link): void {
+    const visual: LinkVisual = l.visual;
+
+    const xFrom = Math.round(pi.timeMap.timePos(l.earlyTimeFrom)) + 0.5;
+    const xTo = Math.round(pi.timeMap.timePos(l.earlyTimeTo)) + 0.5;
+    const rightW = xTo > xFrom;
+    const straightMode = xTo >= xFrom && l.lag >= 0;
+    const horizArrow = rightW;
+
+    const midYFrom = taskMidY(l.from, pi);
+    const midYTo = taskMidY(l.to, pi);
+    const downW = midYTo > midYFrom;
+    const yFrom = downW ? (midYFrom + TASK_H/2) : (midYFrom - TASK_H/2);
+    const yTo = horizArrow ? midYTo+0.5 : (downW ? (midYTo - TASK_H/2) : (midYTo + TASK_H/2));
+    const xLagTo = Math.round(pi.timeMap.timePos(l.earlyTimeFrom+l.lag)) + 0.5;
+
+    ctx.save();
+    ctx.strokeStyle = visual.color;
+
+    if (straightMode) {
+        ctx.beginPath();
+        ctx.moveTo(xFrom, yFrom);
+        ctx.lineTo(xFrom, yTo);
+        ctx.stroke();
+        let x = xFrom;
+        if (horizArrow && l.lag > 0) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.strokeStyle = visual.lagColor;
+            ctx.moveTo(x, yTo);
+            ctx.lineTo(xLagTo, yTo);
+            ctx.stroke();
+            ctx.restore();
+            x = xLagTo;
+        }
+        if (horizArrow && x != xTo) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.setLineDash([3, 3]);
+            ctx.lineDashOffset = 0.5;
+            ctx.moveTo(x, yTo);
+            ctx.lineTo(xTo, yTo);
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+    else {
+        const yBack = downW ? taskTopY(l.to, pi) : taskBotY(l.to, pi);
+        ctx.beginPath();
+        ctx.moveTo(xFrom, yFrom);
+        ctx.lineTo(xFrom, yBack);
+        ctx.stroke();
+        let x = xFrom;
+        if (l.lag != 0) {
+            const xToLag = Math.floor(pi.timeMap.timePos(l.earlyTimeFrom + l.lag)) + 0.5;
+            ctx.save();
+            ctx.strokeStyle = visual.lagColor;
+            ctx.beginPath();
+            ctx.moveTo(x, yBack);
+            ctx.lineTo(xToLag, yBack);
+            ctx.stroke();
+            ctx.restore();
+            x = xToLag;
+        }
+        ctx.beginPath();
+        ctx.moveTo(x, yBack);
+        ctx.lineTo(x, yTo);
+        ctx.stroke();
+        if (x != xTo) {
+            ctx.save();
+            ctx.setLineDash([3, 3]);
+            ctx.lineDashOffset = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(x, yTo);
+            ctx.lineTo(xTo, yTo);
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+
+    ctx.fillStyle = visual.color;
+    ctx.beginPath();
+    ctx.moveTo(xTo, yTo);
+    if (horizArrow) {
+        const basis = xTo - 5;
+        ctx.lineTo(basis, yTo+3);
+        ctx.lineTo(basis, yTo-3);
+    }
+    else {
+        const basis = downW ? yTo - 5 : yTo + 5;
+        ctx.lineTo(xTo-3, basis);
+        ctx.lineTo(xTo+3, basis);
+    }
+    ctx.fill();
+
+    ctx.restore();
+}
 
 function taskTopY(task: Task, pi: PaintInfo): number {
     const visual: TaskVisual = task.visual;

@@ -53,6 +53,32 @@ export class Link {
     }
 
     get earlyTimeTo(): number {
+        return this.to.earlyStart;
+    }
+
+    get earlyTimeFrom(): number {
+        switch (this.type) {
+            case LinkType.FS:
+                return this.from.earlyFinish;
+            case LinkType.SS:
+                return this.from.earlyStart;
+        }
+    }
+
+    get lateTimeTo(): number {
+        return this.to.lateStart;
+    }
+
+    get lateTimeFrom(): number {
+        switch (this.type) {
+            case LinkType.FS:
+                return this.from.lateFinish;
+            case LinkType.SS:
+                return this.from.lateStart;
+        }
+    }
+
+    get earlyTimeToPlan(): number {
         switch (this.type) {
             case LinkType.FS:
                 return this.from.earlyFinish + this.lag;
@@ -61,7 +87,7 @@ export class Link {
         }
     }
 
-    get lateTimeTo(): number {
+    get lateTimeToPlan(): number {
         switch (this.type) {
             case LinkType.FS:
                 return this.from.lateFinish + this.lag;
@@ -70,11 +96,11 @@ export class Link {
         }
     }
 
-    get earlyTimeFrom(): number {
+    get earlyTimeFromPlan(): number {
         return this.to.earlyStart - this.lag;
     }
 
-    get lateTimeFrom(): number {
+    get lateTimeFromPlan(): number {
         return this.to.lateStart - this.lag;
     }
 
@@ -189,7 +215,7 @@ export class Task {
 
     forwardPlan(linkIn: Link): number {
         if (linkIn) {
-            this._earlyStart = Math.max(this._earlyStart, linkIn.earlyTimeTo);
+            this._earlyStart = Math.max(this._earlyStart, linkIn.earlyTimeToPlan);
         }
         this._earlyFinish = this._earlyStart + this._duration;
 
@@ -207,7 +233,7 @@ export class Task {
 
     backwardPlan(linkOut: Link): number {
         if (linkOut) {
-            this._lateFinish = Math.min(this._lateFinish, linkOut.lateTimeFrom);
+            this._lateFinish = Math.min(this._lateFinish, linkOut.lateTimeFromPlan);
         }
         this._lateStart = this._lateFinish - this._duration;
 

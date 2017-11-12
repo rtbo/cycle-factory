@@ -4,7 +4,7 @@ import {
 
 import { GanttTimeMapService } from '../gantt-time-map.service';
 import { GanttHeightMapService, VBounds, GanttHeightMap } from '../gantt-height-map.service';
-import { PaintInfo, paintBackground, paintRuler, paintTask } from '../painting';
+import { PaintInfo, paintBackground, paintRuler, paintTask, paintLink } from '../painting';
 
 import { Cycle } from '../../model/cycle';
 import { CycleService } from '../../model/cycle.service';
@@ -109,6 +109,9 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         paintRuler(ctx, pi);
         for (let t of this.cycle.tasks) {
             paintTask(ctx, pi, t);
+        }
+        for (let l of this.cycle.links) {
+            paintLink(ctx, pi, l);
         }
     }
 }
