@@ -1,6 +1,7 @@
 <table #tasktable class="table table-bordered">
     <thead class="thead-default">
         <tr class="tasktableheader">
+            <th class="text-left">#</th>
             <th class="text-left">Task name</th>
             <th class="text-center">duration</th>
             <th class="text-center">start</th>
@@ -10,6 +11,7 @@
     </thead>
     <tbody>
         <tr class="tasktablerow" *ngFor="let task of cycle.tasks">
+            <th class="text-left">{{task.visual.ind+1}}</th>
             <td [(gcContentEditableModel)]="task.name" class="text-left"></td>
             <td [(gcContentEditableModel)]="task.duration" type="number" class="text-center"></td>
             <td class="text-center">{{task.earlyStart}}</td>
