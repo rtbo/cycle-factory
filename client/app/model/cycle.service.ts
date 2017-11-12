@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 import { Task, Cycle, Link, LinkType } from './cycle';
+import { TaskVisual, LinkVisual } from './visuals';
 
 @Injectable()
 export class CycleService {
@@ -19,13 +20,14 @@ export class CycleService {
     }
 
     setCurrentCycle(cycle: Cycle) {
+        if (cycle === this.currentCycle) return;
+
         this._currentCycle.next(cycle);
     }
 
     get currentCycleChange(): Observable<Cycle> {
         return this._currentCycle.asObservable();
     }
-
 
     makeTestCycle(): Cycle {
         let cycle = new Cycle;
@@ -48,13 +50,37 @@ export class CycleService {
 
         Link.createLink(t1, t2);
         Link.createLink(t2, t4);
-        Link.createLink(t1, t3, LinkType.FS, 2);
+        Link.createLink(t1, t3, LinkType.FS, -2);
         Link.createLink(t3, t4);
 
         cycle.planInhibit = false;
         cycle.plan();
 
+        attachVisuals(cycle);
         return cycle;
     }
 
+}
+
+function attachVisuals(cycle: Cycle): void {
+    for (let i=0; i<cycle.tasks.length; ++i) {
+        attachTaskVisual(i, cycle.tasks[i]);
+    }
+    for (let l of cycle.links) {
+        attachLinkVisual(l);
+    }
+}
+
+function attachTaskVisual(ind: number, task: Task): void {
+    if (!task.visual) {
+        task.visual = new TaskVisual;
+    }
+    const v: TaskVisual = task.visual;
+    v.ind = ind;
+}
+
+function attachLinkVisual(link: Link): void {
+    if (!link.visual) {
+        link.visual = new LinkVisual;
+    }
 }

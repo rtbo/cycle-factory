@@ -20,6 +20,7 @@ export class Link {
 
     private _event = new EventDispatcher<void>();
 
+    public visual: any;
 
     get type(): LinkType {
         return this._type;
@@ -113,6 +114,8 @@ export class Task {
     private _lateFinish: number     = 0;
 
     private _durationEvent = new EventDispatcher<number>();
+
+    public visual: any;
 
     constructor(cycle: Cycle, name: string = '') {
         this._cycle = cycle;
