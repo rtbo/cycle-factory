@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Cycle } from '../model/cycle';
 import { CycleService } from '../model/cycle.service';
+import { GanttTimeMapService } from '../gantt/gantt-time-map.service';
 
 @Component({
     selector: 'gc-toolbar',
@@ -11,7 +12,9 @@ export class ToolbarComponent implements OnInit {
 
     cycle: Cycle;
 
-    constructor(private cycleService: CycleService) { }
+    constructor(
+        private cycleService: CycleService,
+        private ganttTimeMapService: GanttTimeMapService) { }
 
     ngOnInit() {
         this.cycleService.currentCycleChange.subscribe(
@@ -19,4 +22,11 @@ export class ToolbarComponent implements OnInit {
         );
     }
 
+    zoomIn() {
+        this.ganttTimeMapService.zoom(1.2);
+    }
+
+    zoomOut() {
+        this.ganttTimeMapService.zoom(1 / 1.2);
+    }
 }

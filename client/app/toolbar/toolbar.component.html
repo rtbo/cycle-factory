@@ -1,8 +1,12 @@
 <div id="taskbar" class="container-fluid">
     <div class="fl-row">
         <div id="buttonbar" class="btn-group button-box">
-            <button type="button" class="btn btn-primary">Add</button>
-            <button type="button" class="btn btn-primary">Remove</button>
+            <button type="button" class="btn btn-primary" (click)="zoomIn()">
+                <span class="glyphicon glyphicon-zoom-in"></span>
+            </button>
+            <button type="button" class="btn btn-primary" (click)="zoomOut()">
+                <span class="glyphicon glyphicon-zoom-out"></span>
+            </button>
         </div>
         <div class="clearfix visible-xs"></div>
         <div class="form-inline">

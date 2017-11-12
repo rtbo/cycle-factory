@@ -2,7 +2,7 @@ import {
     AfterViewChecked, Component, ElementRef, OnInit, HostListener, ViewChild
 } from '@angular/core';
 
-import { GanttTimeMapService } from '../gantt-time-map.service';
+import { GanttTimeMapService, TimeMap } from '../gantt-time-map.service';
 import { GanttHeightMapService, VBounds, GanttHeightMap } from '../gantt-height-map.service';
 import { PaintInfo, paintBackground, paintRuler, paintTask, paintLink } from '../painting';
 
@@ -51,6 +51,12 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
                 }
             }
         );
+        this.ganttTimeMapService.timeMapChange.subscribe(
+            (tm: TimeMap) => {
+                this.checkCanvasSize();
+                this.paintCanvas();
+            }
+        );
     }
 
     ngAfterViewChecked() {
@@ -60,9 +66,11 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
     }
 
     checkCanvasSize(): boolean {
+        const timeMap = this.ganttTimeMapService.timeMap;
+        const cycle = this.cycle;
         const divRect = this.divRef.nativeElement.getBoundingClientRect();
         const canvasRect = this.canvasRef.nativeElement.getBoundingClientRect();
-        const width = divRect.width;
+        const width = Math.max(divRect.width, cycle ? timeMap.timePos(cycle.cycleTime) : 0);
         const height = this.ganttHeightMapService.heightMap.table.height;
         const top = canvasRect.top;
         let res = false;

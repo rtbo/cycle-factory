@@ -11,3 +11,6 @@
     margin: auto;
     flex: 1;
 }
+.bigger {
+    font-size: larger;
+}
