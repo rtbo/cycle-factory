@@ -1,6 +1,7 @@
 .fl-container {
     display: flex;
     flex-direction: row;
+    width: 100%;
 }
 .fl-expand {
     flex: 1;

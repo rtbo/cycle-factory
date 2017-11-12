@@ -15,7 +15,7 @@ export class TimeGrad {
     pos: number;
 }
 
-export class TimeMap {
+export class GanttTimeMap {
     constructor(private _scale: number) {}
 
     get scale(): number {
@@ -41,7 +41,7 @@ export class GanttTimeMapService {
         this._width = DEFAULT_WIDTH;
         this._duration = DEFAULT_DURATION;
         this._mapSubject = new BehaviorSubject(
-            new TimeMap(DEFAULT_WIDTH / DEFAULT_DURATION)  // 800 px for 60 time units
+            new GanttTimeMap(DEFAULT_WIDTH / DEFAULT_DURATION)  // 800 px for 60 time units
         );
         this._gradsSubject = new BehaviorSubject([]);
         this.cycleService.currentCycleChange.subscribe(
@@ -57,15 +57,15 @@ export class GanttTimeMapService {
     private _duration: number;
     private _widthInitialized: boolean = false;
 
-    private _mapSubject: BehaviorSubject<TimeMap>;
+    private _mapSubject: BehaviorSubject<GanttTimeMap>;
 
     private _gradsSubject: BehaviorSubject<TimeGrad[]>;
 
-    get timeMap(): TimeMap {
+    get timeMap(): GanttTimeMap {
         return this._mapSubject.value;
     }
 
-    get timeMapChange(): Observable<TimeMap> {
+    get timeMapChange(): Observable<GanttTimeMap> {
         return this._mapSubject.asObservable();
     }
 
@@ -122,7 +122,7 @@ export class GanttTimeMapService {
 
     private updateScale(scale: number): void {
         if (scale !== this.timeMap.scale) {
-            this._mapSubject.next(new TimeMap(scale));
+            this._mapSubject.next(new GanttTimeMap(scale));
             this._gradsSubject.next(this.buildGrads());
         }
     }

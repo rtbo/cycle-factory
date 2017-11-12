@@ -2,7 +2,7 @@ import {
     AfterViewChecked, Component, ElementRef, OnInit, HostListener, ViewChild
 } from '@angular/core';
 
-import { GanttTimeMapService, TimeMap } from '../gantt-time-map.service';
+import { GanttTimeMapService, GanttTimeMap } from '../gantt-time-map.service';
 import { GanttHeightMapService, VBounds, GanttHeightMap } from '../gantt-height-map.service';
 import { PaintInfo, paintBackground, paintRuler, paintTask, paintLink } from '../painting';
 
@@ -52,7 +52,7 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
             }
         );
         this.ganttTimeMapService.timeMapChange.subscribe(
-            (tm: TimeMap) => {
+            (tm: GanttTimeMap) => {
                 this.checkCanvasSize();
                 this.paintCanvas();
             }
@@ -66,18 +66,22 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
     }
 
     checkCanvasSize(): boolean {
-        const timeMap = this.ganttTimeMapService.timeMap;
-        const cycle = this.cycle;
         const divRect = this.divRef.nativeElement.getBoundingClientRect();
         const canvasRect = this.canvasRef.nativeElement.getBoundingClientRect();
-        const width = Math.max(divRect.width, cycle ? timeMap.timePos(cycle.cycleTime) : 0);
+        const divWidth = divRect.width;
         const height = this.ganttHeightMapService.heightMap.table.height;
         const top = canvasRect.top;
+        const timeMap = this.ganttTimeMapService.timeMap;
+        const cycle = this.cycle;
+        const cycleWidth = this.cycle ? timeMap.timePos(this.cycle.cycleTime) : 0;
+        const width = Math.floor(Math.max(divWidth, cycleWidth));
         let res = false;
 
         if (width != this._canvasWidth) {
             this._canvasWidth = width;
             this.canvasRef.nativeElement.width = width;
+            this.canvasRef.nativeElement.style.width =
+                    (cycleWidth > divWidth) ? ""+width+"px" : "100%";
             this.ganttTimeMapService.updateCanvasWidth(width);
             res = true;
         }
