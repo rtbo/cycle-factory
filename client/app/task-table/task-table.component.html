@@ -22,6 +22,7 @@
             <th></th>
             <td #addByName class="text-left dim"
                     (focus)="onAddByNameFocus()"
+                    #contentEditable="contentEditableModel"
                     [gcContentEditableModel]="addByNamePhrase"
                     (gcContentEditableModelChange)="onNameEnter($event)"></td>
             <td></td>

@@ -10,6 +10,7 @@ import {
 
 @Directive({
     selector: '[gcContentEditableModel]',
+    exportAs: "contentEditableModel",
     host: {
         "ContentEditable": "true"
     }
@@ -23,6 +24,11 @@ export class ContentEditableModelDirective implements OnChanges {
     @Input() type: string = "text";
 
     ngOnChanges(changes: SimpleChanges) {
+        this.applyModelToContent();
+    }
+
+    resetModel(model: any) {
+        this.model = model;
         this.applyModelToContent();
     }
 

@@ -20,6 +20,7 @@ export class TaskTableComponent implements OnInit, AfterViewInit, OnChanges {
     ) {}
 
     @ViewChild("addByName") addByName: ElementRef;
+    @ViewChild("contentEditable") contentEditable;
     @ViewChild("tasktable") tableRef: ElementRef;
 
     cycle: Cycle;
@@ -60,7 +61,7 @@ export class TaskTableComponent implements OnInit, AfterViewInit, OnChanges {
         let t = new Task(this.cycle, event);
         t.duration = 1;
         this.cycle.pushTask(t);
-        //this.addByName.nativeElement.textContent = this.addByNamePhrase;
+        this.contentEditable.resetModel(this.addByNamePhrase);
     }
 
     onAddByNameFocus(): void {
