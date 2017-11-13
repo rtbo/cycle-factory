@@ -1,3 +1,6 @@
 td {
     outline: none !important;
 }
+.dim {
+    color: grey;
+}

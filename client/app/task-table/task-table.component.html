@@ -12,11 +12,22 @@
     <tbody>
         <tr class="tasktablerow" *ngFor="let task of cycle.tasks">
             <th class="text-left">{{task.visual.ind+1}}</th>
-            <td [(gcContentEditableModel)]="task.name" class="text-left"></td>
-            <td [(gcContentEditableModel)]="task.duration" type="number" class="text-center"></td>
+            <td class="text-left" [(gcContentEditableModel)]="task.name"></td>
+            <td class="text-center" [(gcContentEditableModel)]="task.duration" type="number"></td>
             <td class="text-center">{{task.earlyStart}}</td>
             <td class="text-center">{{task.earlyFinish}}</td>
             <td class="text-center">{{task.slack}}</td>
+        </tr>
+        <tr class="tasktablerow">
+            <th></th>
+            <td #addByName class="text-left dim"
+                    (focus)="onAddByNameFocus()"
+                    [gcContentEditableModel]="addByNamePhrase"
+                    (gcContentEditableModelChange)="onNameEnter($event)"></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
         </tr>
     </tbody>
 </table>

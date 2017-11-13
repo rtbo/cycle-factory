@@ -255,7 +255,9 @@ export class Cycle {
     private _links: Link[]              = [];
     private _linkSubscriptions: any[]   = [];
     private _planInhibit: boolean       = false;
+
     private _planEvent                  = new EventDispatcher<void>();
+    private _taskPushEvent              = new EventDispatcher<[number, Task]>();
 
 
     get name(): string {
@@ -286,11 +288,13 @@ export class Cycle {
 
     pushTask(task: Task) {
         de && mand(task.cycle === this);
+        const ind = this._tasks.length;
         this._tasks.push(task);
         const subscription = task.durationEvent.subscribe((number) => {
             this.plan();
         });
         this._taskSubscriptions.push(subscription);
+        this._taskPushEvent.dispatch([ind, task]);
     }
 
     pushLink(link: Link) {
@@ -335,5 +339,8 @@ export class Cycle {
 
     get planEvent(): IEvent<void> {
         return this._planEvent;
+    }
+    get taskPushEvent(): IEvent<[number, Task]> {
+        return this._taskPushEvent;
     }
 }

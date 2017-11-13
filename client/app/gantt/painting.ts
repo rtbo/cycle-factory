@@ -1,5 +1,5 @@
 
-import { TimeGrad, TimeMap } from './gantt-time-map.service';
+import { TimeGrad, GanttTimeMap } from './gantt-time-map.service';
 import { GanttHeightMap } from './gantt-height-map.service';
 import { Task, Link } from '../model/cycle';
 import { TaskVisual, LinkVisual } from '../model/visuals';
@@ -19,7 +19,7 @@ export class PaintInfo {
     canvasWidth: number;
     canvasHeight: number;
     heightMap: GanttHeightMap;
-    timeMap: TimeMap;
+    timeMap: GanttTimeMap;
     timeGrads: TimeGrad[];
 }
 

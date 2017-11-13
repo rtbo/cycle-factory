@@ -26,7 +26,7 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
     private _canvasWidth: number;
     private _canvasHeight: number
     private _canvasTop: number;
-    private _planSubscription: any;
+    private _cycleSubscriptions = [];
 
     @ViewChild("ganttDiv")
     divRef: ElementRef;
@@ -36,10 +36,18 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
     ngOnInit() {
         this.cycleService.currentCycleChange.subscribe(
             (cycle: Cycle) => {
+                for (let s of this._cycleSubscriptions) {
+                    s.unsubscribe();
+                }
                 this.cycle = cycle;
-                this._planSubscription = cycle.planEvent.subscribe(() => {
-                    this.paintCanvas();
-                });
+                this._cycleSubscriptions = [
+                    cycle.planEvent.subscribe(() => {
+                        this.paintCanvas();
+                    }),
+                    cycle.taskPushEvent.subscribe((arg) => {
+                        this.paintCanvas();
+                    })
+                ];
             }
         );
         this.checkCanvasSize();

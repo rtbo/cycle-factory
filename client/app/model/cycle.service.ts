@@ -8,11 +8,12 @@ import { TaskVisual, LinkVisual } from './visuals';
 export class CycleService {
 
     private _currentCycle: BehaviorSubject<Cycle>;
+    private _subscriptions = [];
 
     constructor() {
-        this._currentCycle = new BehaviorSubject(
-            this.makeTestCycle()
-        );
+        const cycle = this.makeTestCycle();
+        this.subscribeToCycle(cycle);
+        this._currentCycle = new BehaviorSubject( cycle );
     }
 
     get currentCycle(): Cycle {
@@ -21,7 +22,8 @@ export class CycleService {
 
     setCurrentCycle(cycle: Cycle) {
         if (cycle === this.currentCycle) return;
-
+        this.unsubscribeFromCycle();
+        this.subscribeToCycle(cycle);
         this._currentCycle.next(cycle);
     }
 
@@ -58,6 +60,22 @@ export class CycleService {
 
         attachVisuals(cycle);
         return cycle;
+    }
+
+    private subscribeToCycle(cycle: Cycle) {
+        this._subscriptions = [
+            cycle.taskPushEvent.subscribe((arg: [number, Task]) => {
+                attachTaskVisual(arg[0], arg[1]);
+                cycle.plan();
+            })
+        ];
+    }
+
+    private unsubscribeFromCycle() {
+        for (let s of this._subscriptions) {
+            s.unsubscribe();
+        }
+        this._subscriptions = [];
     }
 
 }

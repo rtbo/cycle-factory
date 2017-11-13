@@ -1,7 +1,7 @@
 import {
     AfterViewInit, OnChanges, Component, ElementRef, OnInit, HostListener, ViewChild
 } from '@angular/core';
-import { Cycle } from '../model/cycle';
+import { Task, Cycle } from '../model/cycle';
 import { CycleService } from '../model/cycle.service';
 
 import { GanttHeightMapService, VBounds, TableVBounds } from '../gantt/gantt-height-map.service';
@@ -19,13 +19,26 @@ export class TaskTableComponent implements OnInit, AfterViewInit, OnChanges {
         private ganttHeightMapService: GanttHeightMapService
     ) {}
 
+    @ViewChild("addByName") addByName: ElementRef;
     @ViewChild("tasktable") tableRef: ElementRef;
 
     cycle: Cycle;
+    private cycleSubscriptions = [];
+    readonly addByNamePhrase = "Type in here...";
 
     ngOnInit() {
         this.cycleService.currentCycleChange.subscribe(
-            (cycle: Cycle) => { this.cycle = cycle; }
+            (cycle: Cycle) => {
+                for (let s of this.cycleSubscriptions) {
+                    s.unsubscribe();
+                }
+                this.cycle = cycle;
+                this.cycleSubscriptions = [
+                    this.cycle.taskPushEvent.subscribe((args) => {
+                        this.checkChangeHeight();
+                    })
+                ];
+            }
         );
     }
 
@@ -40,6 +53,18 @@ export class TaskTableComponent implements OnInit, AfterViewInit, OnChanges {
     @HostListener("window:resize", ["$event"])
     onResize(event) {
         this.checkChangeHeight();
+    }
+
+    onNameEnter(event): void {
+        if (!this.cycle) return;
+        let t = new Task(this.cycle, event);
+        t.duration = 1;
+        this.cycle.pushTask(t);
+        //this.addByName.nativeElement.textContent = this.addByNamePhrase;
+    }
+
+    onAddByNameFocus(): void {
+        this.addByName.nativeElement.textContent = "";
     }
 
     checkChangeHeight() {
@@ -74,4 +99,5 @@ export class TaskTableComponent implements OnInit, AfterViewInit, OnChanges {
 
         this.ganttHeightMapService.updateTableBounds(newHm);
     }
+
 }
