@@ -1,7 +1,7 @@
 
 import * as api from './cycle2';
 
-describe('Cycle simple', () => {
+describe('Basic Cycle', () => {
     let cycle: api.Cycle;
     beforeEach(() => {
         cycle = new api.Cycle;
@@ -23,14 +23,14 @@ describe('Cycle simple', () => {
         cycle.pushLink(l3c);
     });
 
-    it ("can retrieve basic properties", () => {
+    it ("filters starting and finishing tasks", () => {
         const st = cycle.startingTasks;
         const ft = cycle.finishingTasks;
         expect(st.length).toBe(0);
         expect(ft.length).toBe(0);
     });
 
-    it("can plan one cycle", () => {
+    it("plans correctly", () => {
         const cp = api.planCycle(cycle, 1);
         expect(cp.tasks.length).toBe(3);
         expect(cp.tasks[0].earlyStart).toBe(0);
