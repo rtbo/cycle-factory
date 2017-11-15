@@ -1,3 +1,7 @@
+import * as assert from 'assert';
+
+import { IEvent, EventDispatcher } from '../shared/event';
+
 export class InDock {
 
     constructor(private _planner: Planner) {}
@@ -39,6 +43,7 @@ export class Link {
     private _from: OutDock;
     private _to: InDock;
     private _lag: number;
+    private _lagEvent = new EventDispatcher<number>();
 
     get from(): OutDock {
         return this._from;
@@ -51,6 +56,11 @@ export class Link {
     }
     set lag(value: number) {
         this._lag = value;
+        this._lagEvent.dispatch(value);
+    }
+
+    get lagEvent(): IEvent<number> {
+        return this._lagEvent;
     }
 
     static createLink(from: OutDock, to: InDock, lag: number=0): Link {
@@ -74,6 +84,8 @@ export abstract class Task implements Planner {
     private _startOut   = new OutDock(this);
     private _finishOut  = new OutDock(this);
 
+    private _nameEvent = new EventDispatcher<string>();
+
     constructor(name: string = "") {
         this._name = name;
     }
@@ -90,6 +102,11 @@ export abstract class Task implements Planner {
     }
     set name(value: string) {
         this._name = value;
+        this._nameEvent.dispatch(value);
+    }
+
+    get nameEvent(): IEvent<string> {
+        return this._nameEvent;
     }
 
     get startIn(): InDock {
@@ -109,6 +126,7 @@ export abstract class Task implements Planner {
 export class AtomTask extends Task {
 
     private _duration: number;
+    private _durationEvent = new EventDispatcher<number>();
 
     constructor(name: string, duration: number) {
         super(name);
@@ -120,6 +138,11 @@ export class AtomTask extends Task {
     }
     set duration(value: number) {
         this._duration = value;
+        this._durationEvent.dispatch(value);
+    }
+
+    get durationEvent(): IEvent<number> {
+        return this._durationEvent;
     }
 
     forwardPlan(ctx: PlanContext, time: number): number {
@@ -163,6 +186,10 @@ export class Cycle implements Planner {
     private _tasks: Task[]  = [];
     private _links: Link[]  = [];
 
+    private _taskAddEvent = new EventDispatcher<Task>();
+    private _linkAddEvent = new EventDispatcher<Link>();
+    private _planDirtyEvent = new EventDispatcher<void>();
+
     constructor(name: string="") {
         this._name = name;
     }
@@ -204,10 +231,12 @@ export class Cycle implements Planner {
     }
 
     pushTask(task: Task): void {
+        assert(this._tasks.indexOf(task) === -1);
         this._tasks.push(task);
     }
 
     pushLink(link: Link): void {
+        assert(this._links.indexOf(link) === -1);
         this._links.push(link);
     }
 
@@ -217,40 +246,24 @@ export class Cycle implements Planner {
     backwardPlan(ctx: PlanContext, time: number): number {
         return time;
     }
+
+    get taskAddEvent(): IEvent<Task> {
+        return this._taskAddEvent;
+    }
+    get linkAddEvent(): IEvent<Link> {
+        return this._linkAddEvent;
+    }
+    get planDirtyEvent(): IEvent<void> {
+        return this._planDirtyEvent;
+    }
 }
 
-// export class CycleTask extends Task {
-//     private _cycle: Cycle;
-//     private _count: number;
+// plan API
 
-//     constructor(cycle: Cycle, count: number, name?: string) {
-//         super((name && name.length) ? name : cycle.name);
-//         this._cycle = cycle;
-//     }
-
-//     get cycle(): Cycle {
-//         return this._cycle;
-//     }
-
-//     get count(): number {
-//         return this._count;
-//     }
-
-//     set count(value: number) {
-//         this._count = value;
-//     }
-
-//     forwardPlan(inLink: Link, time: number): number {
-//         throw new Error("not implemented");
-//     }
-//     backwardPlan(outLink: Link, time: number): number {
-//         throw new Error("not implemented");
-//     }
-// }
-
-interface Planner {
-    forwardPlan(ctx: PlanContext, time: number): number;
-    backwardPlan(ctx: PlanContext, time: number): number;
+export function planCycle(cycle: Cycle, count: number): CyclePlan {
+    const cp = new CyclePlan(cycle);
+    cp.plan(count);
+    return cp;
 }
 
 export class TaskPlan {
@@ -272,16 +285,6 @@ export class TaskPlan {
 
     get slack(): number {
         return this.lateStart - this.earlyStart;
-    }
-}
-
-
-class PlanContext {
-    constructor(private taskPlans: TaskPlan[]) {
-    }
-
-    lookUp(task: Task) : TaskPlan {
-        return this.taskPlans[task.ind];
     }
 }
 
@@ -346,8 +349,16 @@ export class CyclePlan {
 
 }
 
-export function planCycle(cycle: Cycle, count: number): CyclePlan {
-    const cp = new CyclePlan(cycle);
-    cp.plan(count);
-    return cp;
+interface Planner {
+    forwardPlan(ctx: PlanContext, time: number): number;
+    backwardPlan(ctx: PlanContext, time: number): number;
+}
+
+class PlanContext {
+    constructor(private taskPlans: TaskPlan[]) {
+    }
+
+    lookUp(task: Task) : TaskPlan {
+        return this.taskPlans[task.ind];
+    }
 }
