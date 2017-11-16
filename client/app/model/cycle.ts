@@ -106,9 +106,10 @@ export class Link {
 
 
     static createLink(from: Task, to: Task, type = LinkType.FS, lag = 0): Link {
-        de&&mand(from && from.cycle && to && to.cycle && from.cycle === to.cycle);
+        // tslint:disable-next-line:no-unused-expression
+        de && mand(from && from.cycle && to && to.cycle && from.cycle === to.cycle);
 
-        let l = new Link;
+        const l = new Link;
         l._from = from;
         l._to = to;
         l._type = type;
@@ -220,7 +221,7 @@ export class Task {
         this._earlyFinish = this._earlyStart + this._duration;
 
         let maxTime = this._earlyFinish;
-        for (let l of this._linksOut) {
+        for (const l of this._linksOut) {
             maxTime = Math.max(maxTime, l.to.forwardPlan(l));
         }
         return maxTime;
@@ -238,7 +239,7 @@ export class Task {
         this._lateStart = this._lateFinish - this._duration;
 
         let minTime = this._lateStart;
-        for (let l of this._linksIn) {
+        for (const l of this._linksIn) {
             minTime = Math.min(minTime, l.from.backwardPlan(l));
         }
         return minTime;
@@ -287,6 +288,7 @@ export class Cycle {
     }
 
     pushTask(task: Task) {
+        // tslint:disable-next-line:no-unused-expression
         de && mand(task.cycle === this);
         const ind = this._tasks.length;
         this._tasks.push(task);
@@ -298,6 +300,7 @@ export class Cycle {
     }
 
     pushLink(link: Link) {
+        // tslint:disable-next-line:no-unused-expression
         de && mand(link.from !== undefined && link.to !== undefined);
         this._links.push(link);
         this.plan();
@@ -318,21 +321,22 @@ export class Cycle {
     plan(): void {
         if (this._planInhibit) return;
 
-        for (let t of this.tasks) {
+        for (const t of this.tasks) {
             t.prepareForward(0);
         }
         let ct = 0;
-        for (let t of this.startingTasks) {
+        for (const t of this.startingTasks) {
             ct = Math.max(ct, t.forwardPlan(null));
         }
         this._cycleTime = ct;
-        for (let t of this.tasks) {
+        for (const t of this.tasks) {
             t.prepareBackward(ct);
         }
         let start = ct;
-        for (let t of this.finishingTasks) {
+        for (const t of this.finishingTasks) {
             start = Math.min(start, t.backwardPlan(null));
         }
+        // tslint:disable-next-line:no-unused-expression
         de && mand(start === 0);
         this._planEvent.dispatch();
     }

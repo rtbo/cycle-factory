@@ -5,66 +5,65 @@ import {
     Output,
     OnChanges,
     SimpleChanges,
+    HostBinding,
     HostListener,
     ElementRef } from '@angular/core';
 
 @Directive({
     selector: '[gcContentEditableModel]',
-    exportAs: "contentEditableModel",
-    host: {
-        "ContentEditable": "true"
-    }
+    exportAs: 'contentEditableModel',
 })
 export class ContentEditableModelDirective implements OnChanges {
 
     constructor(private el: ElementRef) { }
 
-    @Input('gcContentEditableModel') model: any;
-    @Output('gcContentEditableModelChange') change: EventEmitter<any> = new EventEmitter();
-    @Input() type: string = "text";
+    @Input() gcContentEditableModel: any;
+    @Output() gcContentEditableModelChange: EventEmitter<any> = new EventEmitter();
+    @Input() type: string = 'text';
+    @HostBinding('attr.contenteditable') contenteditable = 'true';
 
     ngOnChanges(changes: SimpleChanges) {
         this.applyModelToContent();
     }
 
     resetModel(model: any) {
-        this.model = model;
+        this.gcContentEditableModel = model;
         this.applyModelToContent();
     }
 
-    @HostListener("keydown", ["$event"]) onKeyDown(event) {
-        if (event.key === "Enter") {
+    @HostListener('keydown', ['$event']) onKeyDown(event) {
+        if (event.key === 'Enter') {
             this.doUpdate();
         }
-        else if (event.key === "Escape") {
+        else if (event.key === 'Escape') {
             this.doCancel();
         }
     }
 
-    @HostListener("blur") onBlur() {
+    @HostListener('blur') onBlur() {
         this.doUpdate();
     }
 
     private doUpdate(): void {
 
         // retrieve value
-        let value = this.contentToModel();
+        const value = this.contentToModel();
 
         // check for unparsable number
-        if (this.type == "number" && isNaN(value)) {
+        if (this.type === 'number' && isNaN(value)) {
             this.doCancel();
             return;
         }
 
         // update if needed
-        if (value !== this.model) {
-            this.model = value;
-            this.change.emit(value);
+        if (value !== this.gcContentEditableModel) {
+            this.gcContentEditableModel = value;
+            this.gcContentEditableModelChange.emit(value);
         }
 
         // correct number if needed
         // e.g. parseFloat("4FRF") === 4, we set back "4" to textContent
-        if (this.type === "number" && /[a-z]/i.test(this.textContent)) {
+        if (this.type === 'number' && /[a-z]/i.test(this.textContent)) {
             this.textContent = value;
         }
 
@@ -77,11 +76,11 @@ export class ContentEditableModelDirective implements OnChanges {
     }
 
     private applyModelToContent(): void {
-        this.textContent = this.model.toString();
+        this.textContent = this.gcContentEditableModel.toString();
     }
 
     private contentToModel(): any {
-        if (this.type === "number") {
+        if (this.type === 'number') {
             return parseFloat(this.textContent);
         }
         else {

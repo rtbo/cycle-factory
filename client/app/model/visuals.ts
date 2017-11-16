@@ -1,9 +1,9 @@
 
-const TASK_FILL = "lightblue";
-const TASK_STROKE = "darkblue";
+const TASK_FILL = 'lightblue';
+const TASK_STROKE = 'darkblue';
 
-const LINK_COLOR = "black";
-const LINK_LAG_COLOR = "green";
+const LINK_COLOR = 'black';
+const LINK_LAG_COLOR = 'green';
 
 export class TaskVisual {
     ind: number = 0;

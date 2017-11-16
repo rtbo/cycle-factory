@@ -10,7 +10,9 @@
             true,
             "check-space"
         ],
-        "curly": true,
+        "curly": [
+            true, "ignore-same-line"
+        ],
         "eofline": true,
         "forin": true,
         "import-blacklist": [
@@ -59,7 +61,8 @@
         "no-eval": true,
         "no-inferrable-types": [
             true,
-            "ignore-params"
+            "ignore-params",
+            "ignore-properties"
         ],
         "no-misused-new": true,
         "no-non-null-assertion": true,
@@ -77,7 +80,6 @@
             true,
             "check-open-brace",
             "check-catch",
-            "check-else",
             "check-whitespace"
         ],
         "prefer-const": true,
@@ -110,21 +112,19 @@
         "whitespace": [
             true,
             "check-branch",
-            "check-decl",
-            "check-operator",
             "check-separator",
             "check-type"
         ],
         "directive-selector": [
             true,
             "attribute",
-            "app",
+            "gc",
             "camelCase"
         ],
         "component-selector": [
             true,
             "element",
-            "app",
+            "gc",
             "kebab-case"
         ],
         "use-input-property-decorator": true,

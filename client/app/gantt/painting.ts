@@ -4,14 +4,14 @@ import { GanttHeightMap } from './gantt-height-map.service';
 import { Task, Link } from '../model/cycle';
 import { TaskVisual, LinkVisual } from '../model/visuals';
 
-const CANVAS_BG = "white";
+const CANVAS_BG = 'white';
 
-const RULER_BG = "lightgrey";
-const RULER_FG = "darkgrey";
-const TEXT_FG = "black";
+const RULER_BG = 'lightgrey';
+const RULER_FG = 'darkgrey';
+const TEXT_FG = 'black';
 
 const TASK_BAR_H = 15;
-const TASK_SLACK_FILL = "red";
+const TASK_SLACK_FILL = 'red';
 
 const SLACK_DASH = [3, 3];
 
@@ -47,7 +47,7 @@ export function paintRuler(ctx: CanvasRenderingContext2D, pi: PaintInfo): void {
     ctx.lineTo(pi.canvasWidth, bottom);
     ctx.stroke();
     ctx.fillStyle = TEXT_FG;
-    for (let g of pi.timeGrads) {
+    for (const g of pi.timeGrads) {
         ctx.beginPath();
         ctx.moveTo(g.pos + 0.5, top);
         ctx.lineTo(g.pos + 0.5, canvasBottom);
@@ -58,8 +58,7 @@ export function paintRuler(ctx: CanvasRenderingContext2D, pi: PaintInfo): void {
 
 export function paintTask(ctx: CanvasRenderingContext2D,
                           pi: PaintInfo,
-                          t: Task): void
-{
+                          t: Task): void {
     const visual: TaskVisual = t.visual;
     const left = roundPx(pi.timeMap.timePos(t.earlyStart));
     const right = roundPx(pi.timeMap.timePos(t.earlyFinish));
@@ -134,7 +133,7 @@ export function paintLink(ctx: CanvasRenderingContext2D,
             ctx.restore();
             x = xLagTo;
         }
-        if (horizArrow && x != xTo) {
+        if (horizArrow && x !== xTo) {
             ctx.save();
             ctx.beginPath();
             ctx.setLineDash(SLACK_DASH);
@@ -152,7 +151,7 @@ export function paintLink(ctx: CanvasRenderingContext2D,
         ctx.lineTo(xFrom, yBack);
         ctx.stroke();
         let x = xFrom;
-        if (l.lag != 0) {
+        if (l.lag !== 0) {
             const xToLag = roundPx(pi.timeMap.timePos(l.earlyTimeFrom + l.lag));
             ctx.save();
             ctx.strokeStyle = visual.lagColor;
@@ -167,7 +166,7 @@ export function paintLink(ctx: CanvasRenderingContext2D,
         ctx.moveTo(x, yBack);
         ctx.lineTo(x, yTo);
         ctx.stroke();
-        if (x != xTo) {
+        if (x !== xTo) {
             ctx.save();
             ctx.setLineDash(SLACK_DASH);
             ctx.lineDashOffset = 0.5;

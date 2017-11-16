@@ -24,19 +24,19 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
 
     cycle: Cycle;
     private _canvasWidth: number;
-    private _canvasHeight: number
+    private _canvasHeight: number;
     private _canvasTop: number;
     private _cycleSubscriptions = [];
 
-    @ViewChild("ganttDiv")
+    @ViewChild('ganttDiv')
     divRef: ElementRef;
-    @ViewChild("ganttCanvas")
+    @ViewChild('ganttCanvas')
     canvasRef: ElementRef;
 
     ngOnInit() {
         this.cycleService.currentCycleChange.subscribe(
             (cycle: Cycle) => {
-                for (let s of this._cycleSubscriptions) {
+                for (const s of this._cycleSubscriptions) {
                     s.unsubscribe();
                 }
                 this.cycle = cycle;
@@ -85,21 +85,21 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         const width = Math.floor(Math.max(divWidth, cycleWidth));
         let res = false;
 
-        if (width != this._canvasWidth) {
+        if (width !== this._canvasWidth) {
             this._canvasWidth = width;
             this.canvasRef.nativeElement.width = width;
             this.canvasRef.nativeElement.style.width =
-                    (cycleWidth > divWidth) ? ""+width+"px" : "100%";
+                    (cycleWidth > divWidth) ? '' + width + 'px' : '100%';
             this.ganttTimeMapService.updateCanvasWidth(width);
             res = true;
         }
-        if (height != this._canvasHeight) {
+        if (height !== this._canvasHeight) {
             this._canvasHeight = height;
-            this.canvasRef.nativeElement.style.height = ""+height+"px";
+            this.canvasRef.nativeElement.style.height = '' + height + 'px';
             this.canvasRef.nativeElement.height = height;
             res = true;
         }
-        if (top != this._canvasTop) {
+        if (top !== this._canvasTop) {
             this._canvasTop = top;
             this.ganttHeightMapService.updateCanvasTop(top);
             res = true;
@@ -107,7 +107,7 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         return res;
     }
 
-    @HostListener("window:resize", ["$event"])
+    @HostListener('window:resize', ['$event'])
     onResize(event) {
         if (this.checkCanvasSize()) {
             this.paintCanvas();
@@ -127,10 +127,10 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
 
         paintBackground(ctx, pi);
         paintRuler(ctx, pi);
-        for (let t of this.cycle.tasks) {
+        for (const t of this.cycle.tasks) {
             paintTask(ctx, pi, t);
         }
-        for (let l of this.cycle.links) {
+        for (const l of this.cycle.links) {
             paintLink(ctx, pi, l);
         }
     }

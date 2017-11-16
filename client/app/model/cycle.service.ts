@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable } from 'rxjs/Observable';
 
 import { Task, Cycle, Link, LinkType } from './cycle';
 import { TaskVisual, LinkVisual } from './visuals';
@@ -32,14 +33,14 @@ export class CycleService {
     }
 
     makeTestCycle(): Cycle {
-        let cycle = new Cycle;
-        cycle.name = "Test cycle";
+        const cycle = new Cycle;
+        cycle.name = 'Test cycle';
         cycle.planInhibit = true;
 
-        let t1 = new Task(cycle, "Task 1");
-        let t2 = new Task(cycle, "Task 2");
-        let t3 = new Task(cycle, "Task 3");
-        let t4 = new Task(cycle, "Task 4");
+        const t1 = new Task(cycle, 'Task 1');
+        const t2 = new Task(cycle, 'Task 2');
+        const t3 = new Task(cycle, 'Task 3');
+        const t4 = new Task(cycle, 'Task 4');
         t1.duration = 4;
         t2.duration = 5;
         t3.duration = 2;
@@ -72,7 +73,7 @@ export class CycleService {
     }
 
     private unsubscribeFromCycle() {
-        for (let s of this._subscriptions) {
+        for (const s of this._subscriptions) {
             s.unsubscribe();
         }
         this._subscriptions = [];
@@ -84,7 +85,7 @@ function attachVisuals(cycle: Cycle): void {
     for (let i=0; i<cycle.tasks.length; ++i) {
         attachTaskVisual(i, cycle.tasks[i]);
     }
-    for (let l of cycle.links) {
+    for (const l of cycle.links) {
         attachLinkVisual(l);
     }
 }

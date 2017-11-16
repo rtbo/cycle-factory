@@ -6,9 +6,9 @@ describe('Basic Cycle', () => {
     beforeEach(() => {
         cycle = new api.Cycle;
 
-        const t1 = new api.AtomTask("Task 1", 3);
-        const t2 = new api.AtomTask("Task 2", 2);
-        const t3 = new api.AtomTask("Task 3", 5);
+        const t1 = new api.AtomTask('Task 1', 3);
+        const t2 = new api.AtomTask('Task 2', 2);
+        const t3 = new api.AtomTask('Task 3', 5);
         cycle.pushTask(t1);
         cycle.pushTask(t2);
         cycle.pushTask(t3);
@@ -23,14 +23,14 @@ describe('Basic Cycle', () => {
         cycle.pushLink(l3c);
     });
 
-    it ("filters starting and finishing tasks", () => {
+    it ('filters starting and finishing tasks', () => {
         const st = cycle.startingTasks;
         const ft = cycle.finishingTasks;
         expect(st.length).toBe(0);
         expect(ft.length).toBe(0);
     });
 
-    it("plans correctly", () => {
+    it('plans correctly', () => {
         const cp = api.planCycle(cycle, 1);
         expect(cp.tasks.length).toBe(3);
         expect(cp.tasks[0].earlyStart).toBe(0);

@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable } from 'rxjs/Observable';
 
-import { Cycle } from "../model/cycle";
+import { Cycle } from '../model/cycle';
 import { CycleService } from '../model/cycle.service';
 
 const INTER_COEFS = [ 2, 2.5, 2 ]; // 1, 2, 5, 10, 20, 50, ...
@@ -34,8 +35,7 @@ export class GanttTimeMap {
 @Injectable()
 export class GanttTimeMapService {
 
-    constructor(private cycleService: CycleService)
-    {
+    constructor(private cycleService: CycleService) {
         // have to initialize with valid values, even though they are replaced
         // shortly after
         this._width = DEFAULT_WIDTH;
@@ -55,7 +55,7 @@ export class GanttTimeMapService {
     cycle: Cycle;
     private _width: number;
     private _duration: number;
-    private _widthInitialized: boolean = false;
+    private _widthInitialized = false;
 
     private _mapSubject: BehaviorSubject<GanttTimeMap>;
 
@@ -102,16 +102,16 @@ export class GanttTimeMapService {
         let i = 0;
         while (this.timeMap.timePos(interG) < MIN_INTER_GRADS) {
             interG *= INTER_COEFS[i];
-            if (++i == INTER_COEFS.length) {
+            if (++i === INTER_COEFS.length) {
                 i = 0;
             }
         }
 
         const numGrads = Math.round(1 + this.timeMap.posTime(this._width) / interG);
-        let grads: TimeGrad[] = new Array(numGrads);
+        const grads: TimeGrad[] = new Array(numGrads);
 
         for (i=0; i<numGrads; ++i) {
-            let t = i * interG;
+            const t = i * interG;
             grads[i] = {
                 time: t, pos: Math.round(this.timeMap.timePos(t))
             };

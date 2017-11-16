@@ -86,7 +86,7 @@ export abstract class Task implements Planner {
 
     private _nameEvent = new EventDispatcher<string>();
 
-    constructor(name: string = "") {
+    constructor(name: string = '') {
         this._name = name;
     }
 
@@ -146,17 +146,17 @@ export class AtomTask extends Task {
     }
 
     forwardPlan(ctx: PlanContext, time: number): number {
-        let tp: TaskPlan = ctx.lookUp(this);
+        const tp: TaskPlan = ctx.lookUp(this);
 
         tp.earlyStart = Math.max(time, tp.earlyStart);
         tp.earlyFinish = tp.earlyStart + this.duration;
 
         let res = tp.earlyFinish;
 
-        for(let l of this.startOut.links) {
+        for (const l of this.startOut.links) {
             res = Math.max(res, l.to.planner.forwardPlan(ctx, tp.earlyStart+l.lag));
         }
-        for (let l of this.finishOut.links) {
+        for (const l of this.finishOut.links) {
             res = Math.max(res, l.to.planner.forwardPlan(ctx, tp.earlyFinish+l.lag));
         }
 
@@ -170,7 +170,7 @@ export class AtomTask extends Task {
 
         let res = tp.lateStart;
 
-        for (let l of this.startIn.links) {
+        for (const l of this.startIn.links) {
             res = Math.min(res, l.from.planner.backwardPlan(ctx, tp.lateStart-l.lag));
         }
 
@@ -190,7 +190,7 @@ export class Cycle implements Planner {
     private _linkAddEvent = new EventDispatcher<Link>();
     private _planDirtyEvent = new EventDispatcher<void>();
 
-    constructor(name: string="") {
+    constructor(name: string='') {
         this._name = name;
     }
 
@@ -311,7 +311,7 @@ export class CyclePlan {
     }
 
     plan(count: number): void {
-        let cycle = this._cycle;
+        const cycle = this._cycle;
         let tasks: TaskPlan[] = [];
         cycle.tasks.forEach((t, i) => {
             t.ind = i;
@@ -323,10 +323,10 @@ export class CyclePlan {
         const ctx = new PlanContext(tasks);
 
         let time = 0;
-        for (let t of cycle.startingTasks) {
+        for (const t of cycle.startingTasks) {
             time = Math.max(time, t.forwardPlan(ctx, 0));
         }
-        for(let l of cycle.start.links) {
+        for (const l of cycle.start.links) {
             time = Math.max(time, l.to.planner.forwardPlan(ctx, l.lag));
         }
 
@@ -335,10 +335,10 @@ export class CyclePlan {
             t.lateFinish = cycleTime;
         });
 
-        for (let t of cycle.finishingTasks) {
+        for (const t of cycle.finishingTasks) {
             time = Math.min(time, t.backwardPlan(ctx, cycleTime));
         }
-        for (let l of cycle.finish.links) {
+        for (const l of cycle.finish.links) {
             time = Math.min(time, l.from.planner.backwardPlan(ctx, cycleTime-l.lag));
         }
 
@@ -358,7 +358,7 @@ class PlanContext {
     constructor(private taskPlans: TaskPlan[]) {
     }
 
-    lookUp(task: Task) : TaskPlan {
+    lookUp(task: Task): TaskPlan {
         return this.taskPlans[task.ind];
     }
 }

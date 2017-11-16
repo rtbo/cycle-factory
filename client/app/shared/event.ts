@@ -21,7 +21,7 @@ export class EventDispatcher<Args> implements IEvent<Args> {
         }
     }
     dispatch(args?: Args): void {
-        for (let handler of this._handlers) {
+        for (const handler of this._handlers) {
             handler(args);
         }
     }
