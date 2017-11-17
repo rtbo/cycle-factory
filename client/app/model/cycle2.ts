@@ -85,6 +85,7 @@ export abstract class Task implements Planner {
     private _finishOut  = new OutDock(this);
 
     private _nameEvent = new EventDispatcher<string>();
+    protected _durationEvent = new EventDispatcher<number>();
 
     constructor(name: string = '') {
         this._name = name;
@@ -109,6 +110,13 @@ export abstract class Task implements Planner {
         return this._nameEvent;
     }
 
+    abstract get duration(): number;
+
+    get durationEvent(): IEvent<number> {
+        return this._durationEvent;
+    }
+
+
     get startIn(): InDock {
         return this._startIn;
     }
@@ -126,7 +134,6 @@ export abstract class Task implements Planner {
 export class AtomTask extends Task {
 
     private _duration: number;
-    private _durationEvent = new EventDispatcher<number>();
 
     constructor(name: string, duration: number) {
         super(name);
@@ -139,10 +146,6 @@ export class AtomTask extends Task {
     set duration(value: number) {
         this._duration = value;
         this._durationEvent.dispatch(value);
-    }
-
-    get durationEvent(): IEvent<number> {
-        return this._durationEvent;
     }
 
     forwardPlan(ctx: PlanContext, time: number): number {
@@ -185,6 +188,9 @@ export class Cycle implements Planner {
     private _finish         = new InDock(this);
     private _tasks: Task[]  = [];
     private _links: Link[]  = [];
+
+    private _taskSubscriptions: any[] = [];
+    private _linkSubscriptions: any[] = [];
 
     private _taskAddEvent = new EventDispatcher<Task>();
     private _linkAddEvent = new EventDispatcher<Link>();
@@ -233,11 +239,25 @@ export class Cycle implements Planner {
     pushTask(task: Task): void {
         assert(this._tasks.indexOf(task) === -1);
         this._tasks.push(task);
+        this._taskAddEvent.dispatch(task);
+        this._planDirtyEvent.dispatch();
+        this._taskSubscriptions.push(
+            task.durationEvent.subscribe((d: number) => {
+                this._planDirtyEvent.dispatch();
+            }
+        ));
     }
 
     pushLink(link: Link): void {
         assert(this._links.indexOf(link) === -1);
         this._links.push(link);
+        this._linkAddEvent.dispatch(link);
+        this._planDirtyEvent.dispatch();
+        this._linkSubscriptions.push(
+            link.lagEvent.subscribe((l: number) => {
+                this._planDirtyEvent.dispatch();
+            }
+        ));
     }
 
     forwardPlan(ctx: PlanContext, time: number): number {
