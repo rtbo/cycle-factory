@@ -10,13 +10,13 @@
         </tr>
     </thead>
     <tbody>
-        <tr class="tasktablerow" *ngFor="let task of cycle.tasks">
-            <th class="text-left">{{task.visual.ind+1}}</th>
-            <td class="text-left" [(gcContentEditableModel)]="task.name"></td>
-            <td class="text-center" [(gcContentEditableModel)]="task.duration" type="number"></td>
-            <td class="text-center">{{task.earlyStart}}</td>
-            <td class="text-center">{{task.earlyFinish}}</td>
-            <td class="text-center">{{task.slack}}</td>
+        <tr class="tasktablerow" *ngFor="let tp of plan.tasks; index as ind">
+            <th class="text-left">{{ind+1}}</th>
+            <td class="text-left" [(gcContentEditableModel)]="tp.task.name"></td>
+            <td class="text-center" [(gcContentEditableModel)]="tp.task.duration" type="number"></td>
+            <td class="text-center">{{tp.earlyStart}}</td>
+            <td class="text-center">{{tp.earlyFinish}}</td>
+            <td class="text-center">{{tp.slack}}</td>
         </tr>
         <tr class="tasktablerow">
             <th></th>

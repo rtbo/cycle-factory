@@ -4,9 +4,9 @@ import {
 
 import { GanttTimeMapService, GanttTimeMap } from '../gantt-time-map.service';
 import { GanttHeightMapService, VBounds, GanttHeightMap } from '../gantt-height-map.service';
-import { PaintInfo, paintBackground, paintRuler, paintTask, paintLink } from '../painting';
+import { PaintInfo, paintBackground, paintRuler, paintTask /*, paintLink */ } from '../painting';
 
-import { Cycle } from '../../model/cycle';
+import { CyclePlan } from '../../model/cycle';
 import { CycleService } from '../../model/cycle.service';
 
 @Component({
@@ -22,7 +22,7 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         private ganttHeightMapService: GanttHeightMapService,
     ) { }
 
-    cycle: Cycle;
+    plan: CyclePlan;
     private _canvasWidth: number;
     private _canvasHeight: number;
     private _canvasTop: number;
@@ -34,20 +34,14 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
     canvasRef: ElementRef;
 
     ngOnInit() {
-        this.cycleService.currentCycleChange.subscribe(
-            (cycle: Cycle) => {
+        this.cycleService.currentPlanChange.subscribe(
+            (plan: CyclePlan) => {
                 for (const s of this._cycleSubscriptions) {
                     s.unsubscribe();
                 }
-                this.cycle = cycle;
-                this._cycleSubscriptions = [
-                    cycle.planEvent.subscribe(() => {
-                        this.paintCanvas();
-                    }),
-                    cycle.taskPushEvent.subscribe((arg) => {
-                        this.paintCanvas();
-                    })
-                ];
+                this.plan = plan;
+                this.checkCanvasSize();
+                this.paintCanvas();
             }
         );
         this.checkCanvasSize();
@@ -80,8 +74,8 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         const height = this.ganttHeightMapService.heightMap.table.height;
         const top = canvasRect.top;
         const timeMap = this.ganttTimeMapService.timeMap;
-        const cycle = this.cycle;
-        const cycleWidth = this.cycle ? timeMap.timePos(this.cycle.cycleTime) : 0;
+        // const plan = this.plan;
+        const cycleWidth = this.plan ? timeMap.timePos(this.plan.cycleTime) : 0;
         const width = Math.floor(Math.max(divWidth, cycleWidth));
         let res = false;
 
@@ -127,11 +121,11 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
 
         paintBackground(ctx, pi);
         paintRuler(ctx, pi);
-        for (const t of this.cycle.tasks) {
-            paintTask(ctx, pi, t);
+        for (const t of this.plan.tasks) {
+            // paintTask(ctx, pi, t);
         }
-        for (const l of this.cycle.links) {
-            paintLink(ctx, pi, l);
-        }
+        // for (const l of this.plan.links) {
+        //     paintLink(ctx, pi, l);
+        // }
     }
 }

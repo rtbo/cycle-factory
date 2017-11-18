@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 
-import { Cycle } from '../model/cycle';
+import { CyclePlan } from '../model/cycle';
 import { CycleService } from '../model/cycle.service';
 
 const INTER_COEFS = [ 2, 2.5, 2 ]; // 1, 2, 5, 10, 20, 50, ...
@@ -44,15 +44,15 @@ export class GanttTimeMapService {
             new GanttTimeMap(DEFAULT_WIDTH / DEFAULT_DURATION)  // 800 px for 60 time units
         );
         this._gradsSubject = new BehaviorSubject([]);
-        this.cycleService.currentCycleChange.subscribe(
-            (cycle: Cycle) => {
-                this.cycle = cycle;
+        this.cycleService.currentPlanChange.subscribe(
+            (plan: CyclePlan) => {
+                this.plan = plan;
                 this.initMap();
             }
         );
     }
 
-    cycle: Cycle;
+    plan: CyclePlan;
     private _width: number;
     private _duration: number;
     private _widthInitialized = false;
@@ -93,7 +93,7 @@ export class GanttTimeMapService {
     }
 
     private initMap() {
-        this._duration = Math.max(DEFAULT_DURATION, this.cycle.cycleTime);
+        this._duration = Math.max(DEFAULT_DURATION, this.plan.cycleTime);
         this.updateScale(this._width / this._duration);
     }
 

@@ -1,265 +1,204 @@
+import * as assert from 'assert';
 
-import { de, mand } from '../shared/debug';
 import { IEvent, EventDispatcher } from '../shared/event';
 
-/**
- * The type of link.
- * Describes whether a link is attached to the start or to the end (aka finish)
- * of a task.
- */
-export enum LinkType {
-    FS, SS
+export class InDock {
+
+    constructor(private _planner: Planner) {}
+    private _links: Link[]  = [];
+
+    get planner(): Planner {
+        return this._planner;
+    }
+
+    get links(): Link[] {
+        return this._links;
+    }
+
+    pushLink(link: Link): void {
+        this._links.push(link);
+    }
+
+}
+
+export class OutDock {
+
+    constructor(private _planner: Planner) {}
+    private _links: Link[]  = [];
+
+    get planner(): Planner {
+        return this._planner;
+    }
+
+
+    get links(): Link[] {
+        return this._links;
+    }
+    pushLink(link: Link): void {
+        this._links.push(link);
+    }
 }
 
 export class Link {
+    private _from: OutDock;
+    private _to: InDock;
+    private _lag: number;
+    private _lagEvent = new EventDispatcher<number>();
 
-    private _type: LinkType;
-    private _lag: number = 0;
-    private _from: Task;
-    private _to: Task;
-
-    private _event = new EventDispatcher<void>();
-
-    public visual: any;
-
-    get type(): LinkType {
-        return this._type;
+    get from(): OutDock {
+        return this._from;
     }
-
-    set type(value: LinkType) {
-        this._type = value;
-        this._event.dispatch();
+    get to(): InDock {
+        return this._to;
     }
-
     get lag(): number {
         return this._lag;
     }
-
     set lag(value: number) {
         this._lag = value;
-        this._event.dispatch();
+        this._lagEvent.dispatch(value);
     }
 
-    get from(): Task {
-        return this._from;
+    get lagEvent(): IEvent<number> {
+        return this._lagEvent;
     }
 
-    get to(): Task {
-        return this._to;
-    }
-
-    get event(): IEvent<void> {
-        return this._event;
-    }
-
-    get earlyTimeTo(): number {
-        return this.to.earlyStart;
-    }
-
-    get earlyTimeFrom(): number {
-        switch (this.type) {
-            case LinkType.FS:
-                return this.from.earlyFinish;
-            case LinkType.SS:
-                return this.from.earlyStart;
-        }
-    }
-
-    get lateTimeTo(): number {
-        return this.to.lateStart;
-    }
-
-    get lateTimeFrom(): number {
-        switch (this.type) {
-            case LinkType.FS:
-                return this.from.lateFinish;
-            case LinkType.SS:
-                return this.from.lateStart;
-        }
-    }
-
-    get earlyTimeToPlan(): number {
-        switch (this.type) {
-            case LinkType.FS:
-                return this.from.earlyFinish + this.lag;
-            case LinkType.SS:
-                return this.from.earlyStart + this.lag;
-        }
-    }
-
-    get lateTimeToPlan(): number {
-        switch (this.type) {
-            case LinkType.FS:
-                return this.from.lateFinish + this.lag;
-            case LinkType.SS:
-                return this.from.lateStart + this.lag;
-        }
-    }
-
-    get earlyTimeFromPlan(): number {
-        return this.to.earlyStart - this.lag;
-    }
-
-    get lateTimeFromPlan(): number {
-        return this.to.lateStart - this.lag;
-    }
-
-
-    static createLink(from: Task, to: Task, type = LinkType.FS, lag = 0): Link {
-        // tslint:disable-next-line:no-unused-expression
-        de && mand(from && from.cycle && to && to.cycle && from.cycle === to.cycle);
-
+    static createLink(from: OutDock, to: InDock, lag: number=0): Link {
         const l = new Link;
         l._from = from;
         l._to = to;
-        l._type = type;
         l._lag = lag;
 
-        from.linksOut.push(l);
-        to.linksIn.push(l);
-
-        from.cycle.pushLink(l);
+        from.pushLink(l);
+        to.pushLink(l);
 
         return l;
     }
-
 }
 
 
-export class Task {
-
-    private _cycle: Cycle;
+export abstract class Task implements Planner {
+    private _ind: number;
     private _name: string;
-    private _duration: number       = 0;
+    private _startIn    = new InDock(this);
+    private _startOut   = new OutDock(this);
+    private _finishOut  = new OutDock(this);
 
-    private _linksIn: Link[]        = [];
-    private _linksOut: Link[]       = [];
+    private _nameEvent = new EventDispatcher<string>();
+    protected _durationEvent = new EventDispatcher<number>();
 
-    private _earlyStart: number     = 0;
-    private _earlyFinish: number    = 0;
-    private _lateStart: number      = 0;
-    private _lateFinish: number     = 0;
-
-    private _durationEvent = new EventDispatcher<number>();
-
-    public visual: any;
-
-    constructor(cycle: Cycle, name: string = '') {
-        this._cycle = cycle;
+    constructor(name: string = '') {
         this._name = name;
     }
 
-
-    get cycle(): Cycle {
-        return this._cycle;
+    get ind(): number {
+        return this._ind;
     }
-
+    set ind(value: number) {
+        this._ind = value;
+    }
 
     get name(): string {
         return this._name;
     }
-
     set name(value: string) {
         this._name = value;
+        this._nameEvent.dispatch(value);
     }
 
-    get duration(): number {
-        return this._duration;
+    get nameEvent(): IEvent<string> {
+        return this._nameEvent;
     }
 
-    set duration(value: number) {
-        this._duration = value;
-        this._durationEvent.dispatch(value);
-    }
+    abstract get duration(): number;
 
     get durationEvent(): IEvent<number> {
         return this._durationEvent;
     }
 
 
-    get earlyStart(): number {
-        return this._earlyStart;
+    get startIn(): InDock {
+        return this._startIn;
+    }
+    get startOut(): OutDock {
+        return this._startOut;
+    }
+    get finishOut(): OutDock {
+        return this._finishOut;
     }
 
-    get earlyFinish(): number {
-        return this._earlyFinish;
+    abstract forwardPlan(ctx: PlanContext, time: number): number;
+    abstract backwardPlan(ctx: PlanContext, time: number): number;
+}
+
+export class AtomTask extends Task {
+
+    private _duration: number;
+
+    constructor(name: string, duration: number) {
+        super(name);
+        this._duration = duration;
     }
 
-    get lateStart(): number {
-        return this._lateStart;
+    get duration(): number {
+        return this._duration;
+    }
+    set duration(value: number) {
+        this._duration = value;
+        this._durationEvent.dispatch(value);
     }
 
-    get lateFinish(): number {
-        return this._lateFinish;
-    }
+    forwardPlan(ctx: PlanContext, time: number): number {
+        const tp: TaskPlan = ctx.lookUp(this);
 
-    get isCriticalPath(): boolean {
-        return this._earlyStart === this._lateStart;
-    }
+        tp.earlyStart = Math.max(time, tp.earlyStart);
+        tp.earlyFinish = tp.earlyStart + this.duration;
 
-    get slack(): number {
-        return this._lateStart - this._earlyStart;
-    }
+        let res = tp.earlyFinish;
 
-    get linksIn(): Link[] {
-        return this._linksIn;
-    }
-
-    get linksOut(): Link[] {
-        return this._linksOut;
-    }
-
-    prepareForward(time: number): void {
-        this._earlyStart = time;
-        this._earlyFinish = time;
-    }
-
-    forwardPlan(linkIn: Link): number {
-        if (linkIn) {
-            this._earlyStart = Math.max(this._earlyStart, linkIn.earlyTimeToPlan);
+        for (const l of this.startOut.links) {
+            res = Math.max(res, l.to.planner.forwardPlan(ctx, tp.earlyStart+l.lag));
         }
-        this._earlyFinish = this._earlyStart + this._duration;
-
-        let maxTime = this._earlyFinish;
-        for (const l of this._linksOut) {
-            maxTime = Math.max(maxTime, l.to.forwardPlan(l));
+        for (const l of this.finishOut.links) {
+            res = Math.max(res, l.to.planner.forwardPlan(ctx, tp.earlyFinish+l.lag));
         }
-        return maxTime;
+
+        return res;
     }
+    backwardPlan(ctx: PlanContext, time: number): number {
+        const tp: TaskPlan = ctx.lookUp(this);
 
-    prepareBackward(time: number): void {
-        this._lateStart = time;
-        this._lateFinish = time;
-    }
+        tp.lateFinish = Math.min(time, tp.lateFinish);
+        tp.lateStart = tp.lateFinish - this.duration;
 
-    backwardPlan(linkOut: Link): number {
-        if (linkOut) {
-            this._lateFinish = Math.min(this._lateFinish, linkOut.lateTimeFromPlan);
+        let res = tp.lateStart;
+
+        for (const l of this.startIn.links) {
+            res = Math.min(res, l.from.planner.backwardPlan(ctx, tp.lateStart-l.lag));
         }
-        this._lateStart = this._lateFinish - this._duration;
 
-        let minTime = this._lateStart;
-        for (const l of this._linksIn) {
-            minTime = Math.min(minTime, l.from.backwardPlan(l));
-        }
-        return minTime;
+        return res;
     }
 }
 
 
-export class Cycle {
-
+export class Cycle implements Planner {
     private _name: string;
-    private _cycleTime: number          = 0;
-    private _tasks: Task[]              = [];
-    private _taskSubscriptions: any[]   = [];
-    private _links: Link[]              = [];
-    private _linkSubscriptions: any[]   = [];
-    private _planInhibit: boolean       = false;
+    private _start          = new OutDock(this);
+    private _finish         = new InDock(this);
+    private _tasks: Task[]  = [];
+    private _links: Link[]  = [];
 
-    private _planEvent                  = new EventDispatcher<void>();
-    private _taskPushEvent              = new EventDispatcher<[number, Task]>();
+    private _taskSubscriptions: any[] = [];
+    private _linkSubscriptions: any[] = [];
 
+    private _taskAddEvent = new EventDispatcher<Task>();
+    private _linkAddEvent = new EventDispatcher<Link>();
+    private _planDirtyEvent = new EventDispatcher<void>();
+
+    constructor(name: string='') {
+        this._name = name;
+    }
 
     get name(): string {
         return this._name;
@@ -269,82 +208,185 @@ export class Cycle {
         this._name = value;
     }
 
+    get tasks(): Task[] {
+        return this._tasks;
+    }
 
-    get tasks(): Task[] { return this._tasks; }
+    get links(): Link[] {
+        return this._links;
+    }
 
-    get links(): Link[] { return this._links; }
+    get start(): OutDock {
+        return this._start;
+    }
+
+    get finish(): InDock {
+        return this._finish;
+    }
+
+    get startingTasks(): Task[] {
+        return this._tasks.filter(t => {
+            return t.startOut.links.length === 0 && t.finishOut.links.length === 0;
+        });
+    }
+
+    get finishingTasks(): Task[] {
+        return this._tasks.filter(t => {
+            return t.startIn.links.length === 0;
+        });
+    }
+
+    pushTask(task: Task): void {
+        assert(this._tasks.indexOf(task) === -1);
+        this._tasks.push(task);
+        this._taskAddEvent.dispatch(task);
+        this._planDirtyEvent.dispatch();
+        this._taskSubscriptions.push(
+            task.durationEvent.subscribe((d: number) => {
+                this._planDirtyEvent.dispatch();
+            }
+        ));
+    }
+
+    pushLink(link: Link): void {
+        assert(this._links.indexOf(link) === -1);
+        this._links.push(link);
+        this._linkAddEvent.dispatch(link);
+        this._planDirtyEvent.dispatch();
+        this._linkSubscriptions.push(
+            link.lagEvent.subscribe((l: number) => {
+                this._planDirtyEvent.dispatch();
+            }
+        ));
+    }
+
+    forwardPlan(ctx: PlanContext, time: number): number {
+        return time;
+    }
+    backwardPlan(ctx: PlanContext, time: number): number {
+        return time;
+    }
+
+    get taskAddEvent(): IEvent<Task> {
+        return this._taskAddEvent;
+    }
+    get linkAddEvent(): IEvent<Link> {
+        return this._linkAddEvent;
+    }
+    get planDirtyEvent(): IEvent<void> {
+        return this._planDirtyEvent;
+    }
+}
+
+// plan API
+
+export function planCycle(cycle: Cycle, count: number): CyclePlan {
+    const cp = new CyclePlan(cycle);
+    cp.plan(count);
+    return cp;
+}
+
+export class TaskPlan {
+    private _task: Task;
+    earlyStart: number     = 0;
+    earlyFinish: number    = 0;
+    lateStart: number      = 0;
+    lateFinish: number     = 0;
+
+    visual: any;
+
+    constructor(task: Task) {
+        this._task = task;
+    }
+
+    get task(): Task {
+        return this._task;
+    }
+
+    get isCriticalPath(): boolean {
+        return this.earlyStart === this.lateStart;
+    }
+
+    get slack(): number {
+        return this.lateStart - this.earlyStart;
+    }
+}
+
+export class CyclePlan {
+    private _cycle: Cycle;
+    private _tasks: TaskPlan[] = [];
+    private _cycleTime: number;
+    private _count: number;
+
+    constructor(cycle: Cycle) {
+        this._cycle = cycle;
+    }
+
+    get cycle(): Cycle {
+        return this._cycle;
+    }
+
+    get tasks(): TaskPlan[] {
+        return this._tasks;
+    }
 
     get cycleTime(): number {
         return this._cycleTime;
     }
 
-
-    get startingTasks(): Task[] {
-        return this.tasks.filter(t => t.linksIn.length === 0);
+    get count(): number {
+        return this._count;
     }
 
-    get finishingTasks(): Task[] {
-        return this.tasks.filter(t => t.linksOut.length === 0);
-    }
-
-    pushTask(task: Task) {
-        // tslint:disable-next-line:no-unused-expression
-        de && mand(task.cycle === this);
-        const ind = this._tasks.length;
-        this._tasks.push(task);
-        const subscription = task.durationEvent.subscribe((number) => {
-            this.plan();
+    plan(count: number): void {
+        const cycle = this._cycle;
+        let tasks: TaskPlan[] = [];
+        cycle.tasks.forEach((t, i) => {
+            t.ind = i;
         });
-        this._taskSubscriptions.push(subscription);
-        this._taskPushEvent.dispatch([ind, task]);
-    }
-
-    pushLink(link: Link) {
-        // tslint:disable-next-line:no-unused-expression
-        de && mand(link.from !== undefined && link.to !== undefined);
-        this._links.push(link);
-        this.plan();
-        const subscription = link.event.subscribe(() => {
-            this.plan();
+        tasks = cycle.tasks.map(t => {
+            return new TaskPlan(t);
         });
-        this._linkSubscriptions.push(subscription);
-    }
 
-    get planInhibit(): boolean {
-        return this._planInhibit;
-    }
+        const ctx = new PlanContext(tasks);
 
-    set planInhibit(value: boolean) {
-        this._planInhibit = value;
-    }
-
-    plan(): void {
-        if (this._planInhibit) return;
-
-        for (const t of this.tasks) {
-            t.prepareForward(0);
+        let time = 0;
+        for (const t of cycle.startingTasks) {
+            time = Math.max(time, t.forwardPlan(ctx, 0));
         }
-        let ct = 0;
-        for (const t of this.startingTasks) {
-            ct = Math.max(ct, t.forwardPlan(null));
+        for (const l of cycle.start.links) {
+            time = Math.max(time, l.to.planner.forwardPlan(ctx, l.lag));
         }
-        this._cycleTime = ct;
-        for (const t of this.tasks) {
-            t.prepareBackward(ct);
+
+        const cycleTime = time;
+        tasks.forEach(t => {
+            t.lateFinish = cycleTime;
+        });
+
+        for (const t of cycle.finishingTasks) {
+            time = Math.min(time, t.backwardPlan(ctx, cycleTime));
         }
-        let start = ct;
-        for (const t of this.finishingTasks) {
-            start = Math.min(start, t.backwardPlan(null));
+        for (const l of cycle.finish.links) {
+            time = Math.min(time, l.from.planner.backwardPlan(ctx, cycleTime-l.lag));
         }
-        // tslint:disable-next-line:no-unused-expression
-        de && mand(start === 0);
-        this._planEvent.dispatch();
+
+        this._tasks = tasks;
+        this._count = count;
+        this._cycleTime = cycleTime;
     }
 
-    get planEvent(): IEvent<void> {
-        return this._planEvent;
+}
+
+interface Planner {
+    forwardPlan(ctx: PlanContext, time: number): number;
+    backwardPlan(ctx: PlanContext, time: number): number;
+}
+
+class PlanContext {
+    constructor(private taskPlans: TaskPlan[]) {
     }
-    get taskPushEvent(): IEvent<[number, Task]> {
-        return this._taskPushEvent;
+
+    lookUp(task: Task): TaskPlan {
+        return this.taskPlans[task.ind];
     }
 }

@@ -1,7 +1,7 @@
 
 import { TimeGrad, GanttTimeMap } from './gantt-time-map.service';
 import { GanttHeightMap } from './gantt-height-map.service';
-import { Task, Link } from '../model/cycle';
+import { Task, Link, TaskPlan } from '../model/cycle';
 import { TaskVisual, LinkVisual } from '../model/visuals';
 
 const CANVAS_BG = 'white';
@@ -58,13 +58,13 @@ export function paintRuler(ctx: CanvasRenderingContext2D, pi: PaintInfo): void {
 
 export function paintTask(ctx: CanvasRenderingContext2D,
                           pi: PaintInfo,
-                          t: Task): void {
-    const visual: TaskVisual = t.visual;
-    const left = roundPx(pi.timeMap.timePos(t.earlyStart));
-    const right = roundPx(pi.timeMap.timePos(t.earlyFinish));
-    const midY = roundPx(taskMidY(t, pi));
-    const top = roundPx(taskBarTopY(t, pi));
-    const bottom = roundPx(taskBarBotY(t, pi));
+                          tp: TaskPlan): void {
+    const visual: TaskVisual = tp.visual;
+    const left = roundPx(pi.timeMap.timePos(tp.earlyStart));
+    const right = roundPx(pi.timeMap.timePos(tp.earlyFinish));
+    const midY = roundPx(taskMidY(tp, pi));
+    const top = roundPx(taskBarTopY(tp, pi));
+    const bottom = roundPx(taskBarBotY(tp, pi));
 
     ctx.fillStyle = visual.fill;
     ctx.fillRect(left, top, right-left, bottom-top);
@@ -72,9 +72,9 @@ export function paintTask(ctx: CanvasRenderingContext2D,
     ctx.strokeStyle = visual.stroke;
     ctx.strokeRect(left, top, right-left, bottom-top);
 
-    if (t.slack > 0) {
+    if (tp.slack > 0) {
         const markerH = 5;
-        const endSlack = roundPx(pi.timeMap.timePos(t.lateFinish));
+        const endSlack = roundPx(pi.timeMap.timePos(tp.lateFinish));
         if (endSlack - markerH > right) {
             ctx.save();
             ctx.setLineDash(SLACK_DASH);
@@ -96,111 +96,111 @@ export function paintTask(ctx: CanvasRenderingContext2D,
     }
 }
 
-export function paintLink(ctx: CanvasRenderingContext2D,
-                          pi: PaintInfo,
-                          l: Link): void {
-    const visual: LinkVisual = l.visual;
+// export function paintLink(ctx: CanvasRenderingContext2D,
+//                           pi: PaintInfo,
+//                           l: Link): void {
+//     const visual: LinkVisual = l.visual;
 
-    const xFrom = roundPx(pi.timeMap.timePos(l.earlyTimeFrom));
-    const xTo = roundPx(pi.timeMap.timePos(l.earlyTimeTo));
-    const rightW = xTo > xFrom;
-    const straightMode = xTo >= xFrom && l.lag >= 0;
-    const horizArrow = rightW;
+//     const xFrom = roundPx(pi.timeMap.timePos(l.earlyTimeFrom));
+//     const xTo = roundPx(pi.timeMap.timePos(l.earlyTimeTo));
+//     const rightW = xTo > xFrom;
+//     const straightMode = xTo >= xFrom && l.lag >= 0;
+//     const horizArrow = rightW;
 
-    const midYFrom = taskMidY(l.from, pi);
-    const midYTo = taskMidY(l.to, pi);
-    const downW = midYTo > midYFrom;
-    const yFrom = downW ? taskBarBotY(l.from, pi) : taskBarTopY(l.from, pi);
-    const yTo = horizArrow ? midYTo : (downW ? taskBarTopY(l.to, pi) : taskBarBotY(l.to, pi));
-    const xLagTo = roundPx(pi.timeMap.timePos(l.earlyTimeFrom+l.lag));
+//     const midYFrom = taskMidY(l.from, pi);
+//     const midYTo = taskMidY(l.to, pi);
+//     const downW = midYTo > midYFrom;
+//     const yFrom = downW ? taskBarBotY(l.from, pi) : taskBarTopY(l.from, pi);
+//     const yTo = horizArrow ? midYTo : (downW ? taskBarTopY(l.to, pi) : taskBarBotY(l.to, pi));
+//     const xLagTo = roundPx(pi.timeMap.timePos(l.earlyTimeFrom+l.lag));
 
-    ctx.save();
-    ctx.strokeStyle = visual.color;
+//     ctx.save();
+//     ctx.strokeStyle = visual.color;
 
-    if (straightMode) {
-        ctx.beginPath();
-        ctx.moveTo(xFrom, yFrom);
-        ctx.lineTo(xFrom, yTo);
-        ctx.stroke();
-        let x = xFrom;
-        if (horizArrow && l.lag > 0) {
-            ctx.save();
-            ctx.beginPath();
-            ctx.strokeStyle = visual.lagColor;
-            ctx.moveTo(x, yTo);
-            ctx.lineTo(xLagTo, yTo);
-            ctx.stroke();
-            ctx.restore();
-            x = xLagTo;
-        }
-        if (horizArrow && x !== xTo) {
-            ctx.save();
-            ctx.beginPath();
-            ctx.setLineDash(SLACK_DASH);
-            ctx.lineDashOffset = 0.5;
-            ctx.moveTo(x, yTo);
-            ctx.lineTo(xTo, yTo);
-            ctx.stroke();
-            ctx.restore();
-        }
-    }
-    else {
-        const yBack = roundPx(downW ? taskTopY(l.to, pi) : taskBotY(l.to, pi));
-        ctx.beginPath();
-        ctx.moveTo(xFrom, yFrom);
-        ctx.lineTo(xFrom, yBack);
-        ctx.stroke();
-        let x = xFrom;
-        if (l.lag !== 0) {
-            const xToLag = roundPx(pi.timeMap.timePos(l.earlyTimeFrom + l.lag));
-            ctx.save();
-            ctx.strokeStyle = visual.lagColor;
-            ctx.beginPath();
-            ctx.moveTo(x, yBack);
-            ctx.lineTo(xToLag, yBack);
-            ctx.stroke();
-            ctx.restore();
-            x = xToLag;
-        }
-        ctx.beginPath();
-        ctx.moveTo(x, yBack);
-        ctx.lineTo(x, yTo);
-        ctx.stroke();
-        if (x !== xTo) {
-            ctx.save();
-            ctx.setLineDash(SLACK_DASH);
-            ctx.lineDashOffset = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(x, yTo);
-            ctx.lineTo(xTo, yTo);
-            ctx.stroke();
-            ctx.restore();
-        }
-    }
+//     if (straightMode) {
+//         ctx.beginPath();
+//         ctx.moveTo(xFrom, yFrom);
+//         ctx.lineTo(xFrom, yTo);
+//         ctx.stroke();
+//         let x = xFrom;
+//         if (horizArrow && l.lag > 0) {
+//             ctx.save();
+//             ctx.beginPath();
+//             ctx.strokeStyle = visual.lagColor;
+//             ctx.moveTo(x, yTo);
+//             ctx.lineTo(xLagTo, yTo);
+//             ctx.stroke();
+//             ctx.restore();
+//             x = xLagTo;
+//         }
+//         if (horizArrow && x !== xTo) {
+//             ctx.save();
+//             ctx.beginPath();
+//             ctx.setLineDash(SLACK_DASH);
+//             ctx.lineDashOffset = 0.5;
+//             ctx.moveTo(x, yTo);
+//             ctx.lineTo(xTo, yTo);
+//             ctx.stroke();
+//             ctx.restore();
+//         }
+//     }
+//     else {
+//         const yBack = roundPx(downW ? taskTopY(l.to, pi) : taskBotY(l.to, pi));
+//         ctx.beginPath();
+//         ctx.moveTo(xFrom, yFrom);
+//         ctx.lineTo(xFrom, yBack);
+//         ctx.stroke();
+//         let x = xFrom;
+//         if (l.lag !== 0) {
+//             const xToLag = roundPx(pi.timeMap.timePos(l.earlyTimeFrom + l.lag));
+//             ctx.save();
+//             ctx.strokeStyle = visual.lagColor;
+//             ctx.beginPath();
+//             ctx.moveTo(x, yBack);
+//             ctx.lineTo(xToLag, yBack);
+//             ctx.stroke();
+//             ctx.restore();
+//             x = xToLag;
+//         }
+//         ctx.beginPath();
+//         ctx.moveTo(x, yBack);
+//         ctx.lineTo(x, yTo);
+//         ctx.stroke();
+//         if (x !== xTo) {
+//             ctx.save();
+//             ctx.setLineDash(SLACK_DASH);
+//             ctx.lineDashOffset = 0.5;
+//             ctx.beginPath();
+//             ctx.moveTo(x, yTo);
+//             ctx.lineTo(xTo, yTo);
+//             ctx.stroke();
+//             ctx.restore();
+//         }
+//     }
 
-    ctx.fillStyle = visual.color;
-    ctx.beginPath();
-    ctx.moveTo(xTo, yTo);
-    if (horizArrow) {
-        const basis = xTo - 5;
-        ctx.lineTo(basis, yTo+3);
-        ctx.lineTo(basis, yTo-3);
-    }
-    else {
-        const basis = downW ? yTo - 5 : yTo + 5;
-        ctx.lineTo(xTo-3, basis);
-        ctx.lineTo(xTo+3, basis);
-    }
-    ctx.fill();
+//     ctx.fillStyle = visual.color;
+//     ctx.beginPath();
+//     ctx.moveTo(xTo, yTo);
+//     if (horizArrow) {
+//         const basis = xTo - 5;
+//         ctx.lineTo(basis, yTo+3);
+//         ctx.lineTo(basis, yTo-3);
+//     }
+//     else {
+//         const basis = downW ? yTo - 5 : yTo + 5;
+//         ctx.lineTo(xTo-3, basis);
+//         ctx.lineTo(xTo+3, basis);
+//     }
+//     ctx.fill();
 
-    ctx.restore();
-}
+//     ctx.restore();
+// }
 
 function roundPx(pos: number): number {
     return Math.round(pos) + 0.5;
 }
 
-function taskMidY(task: Task, pi: PaintInfo): number {
+function taskMidY(task: TaskPlan, pi: PaintInfo): number {
     const visual: TaskVisual = task.visual;
     const ind = visual.ind;
     if (ind >= pi.heightMap.taskRows.length) return 0;
@@ -208,7 +208,7 @@ function taskMidY(task: Task, pi: PaintInfo): number {
     return row.top + row.height/2;
 }
 
-function taskTopY(task: Task, pi: PaintInfo): number {
+function taskTopY(task: TaskPlan, pi: PaintInfo): number {
     const visual: TaskVisual = task.visual;
     const ind = visual.ind;
     if (ind >= pi.heightMap.taskRows.length) return 0;
@@ -216,7 +216,7 @@ function taskTopY(task: Task, pi: PaintInfo): number {
     return row.top;
 }
 
-function taskBotY(task: Task, pi: PaintInfo): number {
+function taskBotY(task: TaskPlan, pi: PaintInfo): number {
     const visual: TaskVisual = task.visual;
     const ind = visual.ind;
     if (ind >= pi.heightMap.taskRows.length) return 0;
@@ -224,10 +224,10 @@ function taskBotY(task: Task, pi: PaintInfo): number {
     return row.bottom;
 }
 
-function taskBarTopY(task: Task, pi: PaintInfo): number {
+function taskBarTopY(task: TaskPlan, pi: PaintInfo): number {
     return taskMidY(task, pi) - TASK_BAR_H/2;
 }
 
-function taskBarBotY(task: Task, pi: PaintInfo): number {
+function taskBarBotY(task: TaskPlan, pi: PaintInfo): number {
     return taskMidY(task, pi) + TASK_BAR_H/2;
 }

@@ -2,19 +2,21 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 
-import { Task, Cycle, Link, LinkType } from './cycle';
+import { Task, AtomTask, Cycle, Link, CyclePlan, planCycle } from './cycle';
 import { TaskVisual, LinkVisual } from './visuals';
 
 @Injectable()
 export class CycleService {
 
     private _currentCycle: BehaviorSubject<Cycle>;
+    private _currentPlan: BehaviorSubject<CyclePlan>;
     private _subscriptions = [];
 
     constructor() {
         const cycle = this.makeTestCycle();
-        this.subscribeToCycle(cycle);
         this._currentCycle = new BehaviorSubject( cycle );
+        this._currentPlan = new BehaviorSubject( planCycle(cycle, 1) );
+        this.subscribeToCycle(cycle);
     }
 
     get currentCycle(): Cycle {
@@ -32,42 +34,43 @@ export class CycleService {
         return this._currentCycle.asObservable();
     }
 
+    get currentPlan(): CyclePlan {
+        return this._currentPlan.value;
+    }
+
+    get currentPlanChange(): Observable<CyclePlan> {
+        return this._currentPlan.asObservable();
+    }
+
     makeTestCycle(): Cycle {
         const cycle = new Cycle;
         cycle.name = 'Test cycle';
-        cycle.planInhibit = true;
 
-        const t1 = new Task(cycle, 'Task 1');
-        const t2 = new Task(cycle, 'Task 2');
-        const t3 = new Task(cycle, 'Task 3');
-        const t4 = new Task(cycle, 'Task 4');
-        t1.duration = 4;
-        t2.duration = 5;
-        t3.duration = 2;
-        t4.duration = 3;
+        const t1 = new AtomTask('Task 1', 4);
+        const t2 = new AtomTask('Task 2', 5);
+        const t3 = new AtomTask('Task 3', 2);
+        const t4 = new AtomTask('Task 4', 3);
 
         cycle.pushTask(t1);
         cycle.pushTask(t2);
         cycle.pushTask(t3);
         cycle.pushTask(t4);
 
-        Link.createLink(t1, t2);
-        Link.createLink(t2, t4);
-        Link.createLink(t1, t3, LinkType.FS, -2);
-        Link.createLink(t3, t4);
+        Link.createLink(cycle.start, t1.startIn);
+        Link.createLink(t1.finishOut, t2.startIn);
+        Link.createLink(t2.finishOut, t4.startIn);
+        Link.createLink(t1.finishOut, t3.startIn, -2);
+        Link.createLink(t3.finishOut, t4.startIn);
+        Link.createLink(t4.finishOut, cycle.finish);
 
-        cycle.planInhibit = false;
-        cycle.plan();
-
-        attachVisuals(cycle);
         return cycle;
     }
 
     private subscribeToCycle(cycle: Cycle) {
         this._subscriptions = [
-            cycle.taskPushEvent.subscribe((arg: [number, Task]) => {
-                attachTaskVisual(arg[0], arg[1]);
-                cycle.plan();
+            cycle.planDirtyEvent.subscribe(() => {
+                const plan = planCycle(cycle, 1);
+                this._currentPlan.next(plan);
             })
         ];
     }
@@ -91,15 +94,7 @@ function attachVisuals(cycle: Cycle): void {
 }
 
 function attachTaskVisual(ind: number, task: Task): void {
-    if (!task.visual) {
-        task.visual = new TaskVisual;
-    }
-    const v: TaskVisual = task.visual;
-    v.ind = ind;
 }
 
 function attachLinkVisual(link: Link): void {
-    if (!link.visual) {
-        link.visual = new LinkVisual;
-    }
 }

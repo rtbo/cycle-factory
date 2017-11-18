@@ -1,7 +1,7 @@
 import {
     AfterViewInit, OnChanges, Component, ElementRef, OnInit, HostListener, ViewChild
 } from '@angular/core';
-import { Task, Cycle } from '../model/cycle';
+import { Task, AtomTask, CyclePlan } from '../model/cycle';
 import { CycleService } from '../model/cycle.service';
 
 import { GanttHeightMapService, VBounds, TableVBounds } from '../gantt/gantt-height-map.service';
@@ -23,21 +23,18 @@ export class TaskTableComponent implements OnInit, AfterViewInit, OnChanges {
     @ViewChild('contentEditable') contentEditable;
     @ViewChild('tasktable') tableRef: ElementRef;
 
-    cycle: Cycle;
+    plan: CyclePlan;
     private cycleSubscriptions = [];
     readonly addByNamePhrase = 'Type in here...';
 
     ngOnInit() {
-        this.cycleService.currentCycleChange.subscribe(
-            (cycle: Cycle) => {
+        this.cycleService.currentPlanChange.subscribe(
+            (plan: CyclePlan) => {
                 for (const s of this.cycleSubscriptions) {
                     s.unsubscribe();
                 }
-                this.cycle = cycle;
+                this.plan = plan;
                 this.cycleSubscriptions = [
-                    this.cycle.taskPushEvent.subscribe((args) => {
-                        this.checkChangeHeight();
-                    })
                 ];
             }
         );
@@ -57,10 +54,9 @@ export class TaskTableComponent implements OnInit, AfterViewInit, OnChanges {
     }
 
     onNameEnter(event): void {
-        if (!this.cycle) return;
-        const t = new Task(this.cycle, event);
-        t.duration = 1;
-        this.cycle.pushTask(t);
+        if (!this.plan || !this.plan.cycle) return;
+        const t = new AtomTask(event, 1);
+        this.plan.cycle.pushTask(t);
         this.contentEditable.resetModel(this.addByNamePhrase);
     }
 
