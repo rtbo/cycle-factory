@@ -59,7 +59,9 @@ export function paintRuler(ctx: CanvasRenderingContext2D, pi: PaintInfo): void {
 export function paintTask(ctx: CanvasRenderingContext2D,
                           pi: PaintInfo,
                           tp: TaskPlan): void {
-    const visual: TaskVisual = tp.visual;
+    const visual = taskVisual(tp);
+    if (!visual) return;
+
     const left = roundPx(pi.timeMap.timePos(tp.earlyStart));
     const right = roundPx(pi.timeMap.timePos(tp.earlyFinish));
     const midY = roundPx(taskMidY(tp, pi));
@@ -196,38 +198,45 @@ export function paintTask(ctx: CanvasRenderingContext2D,
 //     ctx.restore();
 // }
 
+function taskVisual(tp: TaskPlan): TaskVisual {
+    return tp.visual ? tp.visual : tp.task.visual;
+}
+
 function roundPx(pos: number): number {
     return Math.round(pos) + 0.5;
 }
 
-function taskMidY(task: TaskPlan, pi: PaintInfo): number {
-    const visual: TaskVisual = task.visual;
+function taskMidY(tp: TaskPlan, pi: PaintInfo): number {
+    const visual = taskVisual(tp);
+    if (!visual) return 0;
     const ind = visual.ind;
     if (ind >= pi.heightMap.taskRows.length) return 0;
     const row = pi.heightMap.taskRows[ind];
     return row.top + row.height/2;
 }
 
-function taskTopY(task: TaskPlan, pi: PaintInfo): number {
-    const visual: TaskVisual = task.visual;
+function taskTopY(tp: TaskPlan, pi: PaintInfo): number {
+    const visual = taskVisual(tp);
+    if (!visual) return 0;
     const ind = visual.ind;
     if (ind >= pi.heightMap.taskRows.length) return 0;
     const row = pi.heightMap.taskRows[ind];
     return row.top;
 }
 
-function taskBotY(task: TaskPlan, pi: PaintInfo): number {
-    const visual: TaskVisual = task.visual;
+function taskBotY(tp: TaskPlan, pi: PaintInfo): number {
+    const visual = taskVisual(tp);
+    if (!visual) return 0;
     const ind = visual.ind;
     if (ind >= pi.heightMap.taskRows.length) return 0;
     const row = pi.heightMap.taskRows[ind];
     return row.bottom;
 }
 
-function taskBarTopY(task: TaskPlan, pi: PaintInfo): number {
-    return taskMidY(task, pi) - TASK_BAR_H/2;
+function taskBarTopY(tp: TaskPlan, pi: PaintInfo): number {
+    return taskMidY(tp, pi) - TASK_BAR_H/2;
 }
 
-function taskBarBotY(task: TaskPlan, pi: PaintInfo): number {
-    return taskMidY(task, pi) + TASK_BAR_H/2;
+function taskBarBotY(tp: TaskPlan, pi: PaintInfo): number {
+    return taskMidY(tp, pi) + TASK_BAR_H/2;
 }

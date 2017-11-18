@@ -14,6 +14,7 @@ export class CycleService {
 
     constructor() {
         const cycle = this.makeTestCycle();
+        attachVisuals(cycle);
         this._currentCycle = new BehaviorSubject( cycle );
         this._currentPlan = new BehaviorSubject( planCycle(cycle, 1) );
         this.subscribeToCycle(cycle);
@@ -71,7 +72,9 @@ export class CycleService {
             cycle.planDirtyEvent.subscribe(() => {
                 const plan = planCycle(cycle, 1);
                 this._currentPlan.next(plan);
-            })
+            }),
+            cycle.taskAddEvent.subscribe(attachTaskVisual),
+            cycle.linkAddEvent.subscribe(attachLinkVisual),
         ];
     }
 
@@ -85,16 +88,15 @@ export class CycleService {
 }
 
 function attachVisuals(cycle: Cycle): void {
-    for (let i=0; i<cycle.tasks.length; ++i) {
-        attachTaskVisual(i, cycle.tasks[i]);
-    }
-    for (const l of cycle.links) {
-        attachLinkVisual(l);
-    }
+    cycle.tasks.forEach(attachTaskVisual);
+    cycle.links.forEach(attachLinkVisual);
 }
 
-function attachTaskVisual(ind: number, task: Task): void {
+function attachTaskVisual(task: Task): void {
+    task.visual = new TaskVisual;
+    task.visual.ind = task.ind;
 }
 
 function attachLinkVisual(link: Link): void {
+    link.visual = new LinkVisual;
 }

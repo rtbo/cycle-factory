@@ -1,6 +1,5 @@
-import * as assert from 'assert';
-
 import { IEvent, EventDispatcher } from '../shared/event';
+import { de, mand } from '../shared/debug';
 
 export class InDock {
 
@@ -44,6 +43,7 @@ export class Link {
     private _to: InDock;
     private _lag: number;
     private _lagEvent = new EventDispatcher<number>();
+    public visual: any;
 
     get from(): OutDock {
         return this._from;
@@ -86,6 +86,8 @@ export abstract class Task implements Planner {
 
     private _nameEvent = new EventDispatcher<string>();
     protected _durationEvent = new EventDispatcher<number>();
+
+    public visual: any;
 
     constructor(name: string = '') {
         this._name = name;
@@ -237,19 +239,22 @@ export class Cycle implements Planner {
     }
 
     pushTask(task: Task): void {
-        assert(this._tasks.indexOf(task) === -1);
+        // tslint:disable-next-line:no-unused-expression
+        de && mand(this._tasks.indexOf(task) === -1);
+        task.ind = this._tasks.length;
         this._tasks.push(task);
-        this._taskAddEvent.dispatch(task);
-        this._planDirtyEvent.dispatch();
         this._taskSubscriptions.push(
             task.durationEvent.subscribe((d: number) => {
                 this._planDirtyEvent.dispatch();
             }
         ));
+        this._taskAddEvent.dispatch(task);
+        this._planDirtyEvent.dispatch();
     }
 
     pushLink(link: Link): void {
-        assert(this._links.indexOf(link) === -1);
+        // tslint:disable-next-line:no-unused-expression
+        de && mand(this._links.indexOf(link) === -1);
         this._links.push(link);
         this._linkAddEvent.dispatch(link);
         this._planDirtyEvent.dispatch();

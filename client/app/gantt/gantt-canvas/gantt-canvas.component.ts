@@ -122,7 +122,7 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         paintBackground(ctx, pi);
         paintRuler(ctx, pi);
         for (const t of this.plan.tasks) {
-            // paintTask(ctx, pi, t);
+            paintTask(ctx, pi, t);
         }
         // for (const l of this.plan.links) {
         //     paintLink(ctx, pi, l);
