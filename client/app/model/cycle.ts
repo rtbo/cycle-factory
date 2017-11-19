@@ -1,8 +1,7 @@
 import { IEvent, EventDispatcher } from '../shared/event';
 import { de, mand } from '../shared/debug';
 
-export class InDock {
-
+export class Dock {
     constructor(private _planner: Planner) {}
     private _links: Link[]  = [];
 
@@ -17,25 +16,12 @@ export class InDock {
     pushLink(link: Link): void {
         this._links.push(link);
     }
-
 }
 
-export class OutDock {
+export class InDock extends Dock {
+}
 
-    constructor(private _planner: Planner) {}
-    private _links: Link[]  = [];
-
-    get planner(): Planner {
-        return this._planner;
-    }
-
-
-    get links(): Link[] {
-        return this._links;
-    }
-    pushLink(link: Link): void {
-        this._links.push(link);
-    }
+export class OutDock extends Dock {
 }
 
 export class Link {
