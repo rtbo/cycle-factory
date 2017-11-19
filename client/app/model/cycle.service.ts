@@ -3,7 +3,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 
 import { Task, AtomTask, Cycle, Link, CyclePlan, planCycle } from './cycle';
-import { TaskVisual, LinkVisual } from './visuals';
+import { CycleVisual, TaskVisual, LinkVisual } from './visuals';
 
 @Injectable()
 export class CycleService {
@@ -88,6 +88,7 @@ export class CycleService {
 }
 
 function attachVisuals(cycle: Cycle): void {
+    cycle.visual = new CycleVisual;
     cycle.tasks.forEach(attachTaskVisual);
     cycle.links.forEach(attachLinkVisual);
 }

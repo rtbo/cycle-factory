@@ -1,8 +1,8 @@
 
 import { TimeGrad, GanttTimeMap } from './gantt-time-map.service';
 import { GanttHeightMap } from './gantt-height-map.service';
-import { Task, Link, TaskPlan } from '../model/cycle';
-import { TaskVisual, LinkVisual } from '../model/visuals';
+import { CyclePlan, Task, Link, TaskPlan } from '../model/cycle';
+import { CycleVisual, TaskVisual, LinkVisual } from '../model/visuals';
 
 const CANVAS_BG = 'white';
 
@@ -54,6 +54,35 @@ export function paintRuler(ctx: CanvasRenderingContext2D, pi: PaintInfo): void {
         ctx.stroke();
         ctx.fillText(g.time.toString(), g.pos + 5.5, bottom - 5.5);
     }
+}
+
+export function paintCycles(ctx: CanvasRenderingContext2D,
+                           pi: PaintInfo,
+                           cp: CyclePlan) {
+    const visual = cycleVisual(cp);
+    const top = roundPx(pi.heightMap.table.top);
+    const bottom = roundPx(pi.heightMap.table.bottom);
+    const thickness = 2;
+
+
+    function paint(xTime: number) {
+        const x = roundPx(pi.timeMap.timePos(xTime), thickness);
+        if (x + thickness/2 < 0) return;
+        if (x - thickness/2 > pi.canvasWidth) return;
+        ctx.beginPath();
+        ctx.moveTo(x, top);
+        ctx.lineTo(x, bottom);
+        ctx.stroke();
+    }
+
+    ctx.save();
+    ctx.lineWidth = thickness;
+    ctx.strokeStyle = visual.stroke;
+    paint(0);
+    for (let c=0; c<cp.count; ++c) {
+        paint(cp.cycleTime * (c+1));
+    }
+    ctx.restore();
 }
 
 export function paintTask(ctx: CanvasRenderingContext2D,
@@ -198,12 +227,16 @@ export function paintTask(ctx: CanvasRenderingContext2D,
 //     ctx.restore();
 // }
 
+function cycleVisual(cp: CyclePlan): CycleVisual {
+    return cp.visual ? cp.visual : cp.cycle.visual;
+}
+
 function taskVisual(tp: TaskPlan): TaskVisual {
     return tp.visual ? tp.visual : tp.task.visual;
 }
 
-function roundPx(pos: number): number {
-    return Math.round(pos) + 0.5;
+function roundPx(pos: number, thickness=1): number {
+    return Math.round(pos) + ((thickness % 2) ? 0.5 : 1);
 }
 
 function taskMidY(tp: TaskPlan, pi: PaintInfo): number {

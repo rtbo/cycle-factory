@@ -198,6 +198,8 @@ export class Cycle implements Planner {
     private _linkAddEvent = new EventDispatcher<Link>();
     private _planDirtyEvent = new EventDispatcher<void>();
 
+    public visual: any;
+
     constructor(name: string='') {
         this._name = name;
     }
@@ -293,12 +295,12 @@ export function planCycle(cycle: Cycle, count: number): CyclePlan {
 
 export class TaskPlan {
     private _task: Task;
-    earlyStart: number     = 0;
-    earlyFinish: number    = 0;
-    lateStart: number      = 0;
-    lateFinish: number     = 0;
+    public earlyStart: number     = 0;
+    public earlyFinish: number    = 0;
+    public lateStart: number      = 0;
+    public lateFinish: number     = 0;
 
-    visual: any;
+    public visual: any;
 
     constructor(task: Task) {
         this._task = task;
@@ -322,6 +324,8 @@ export class CyclePlan {
     private _tasks: TaskPlan[] = [];
     private _cycleTime: number;
     private _count: number;
+
+    public visual: any;
 
     constructor(cycle: Cycle) {
         this._cycle = cycle;
