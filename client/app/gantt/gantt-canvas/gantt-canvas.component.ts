@@ -5,7 +5,7 @@ import {
 import { GanttTimeMapService, GanttTimeMap } from '../gantt-time-map.service';
 import { GanttHeightMapService, VBounds, GanttHeightMap } from '../gantt-height-map.service';
 import { PaintInfo, paintBackground, paintRuler,
-    paintCycles, paintTask /*, paintLink */ } from '../painting';
+    paintCycles, paintTask , paintLink } from '../painting';
 
 import { CyclePlan } from '../../model/cycle';
 import { CycleService } from '../../model/cycle.service';
@@ -127,8 +127,8 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         for (const t of this.plan.tasks) {
             paintTask(ctx, pi, t);
         }
-        // for (const l of this.plan.links) {
-        //     paintLink(ctx, pi, l);
-        // }
+        for (const l of this.plan.cycle.links) {
+            paintLink(ctx, pi, this.plan, l);
+        }
     }
 }

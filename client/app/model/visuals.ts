@@ -7,6 +7,9 @@ const TASK_STROKE = 'darkblue';
 const LINK_COLOR = 'black';
 const LINK_LAG_COLOR = 'green';
 
+const LINK_CYCLE_MARK_STROKE = '#321659';
+const LINK_CYCLE_MARK_FILL = '#8d68c1';
+
 export class CycleVisual {
     stroke: string = CYCLE_STROKE;
 }
@@ -20,4 +23,7 @@ export class TaskVisual {
 export class LinkVisual {
     color: string = LINK_COLOR;
     lagColor: string = LINK_LAG_COLOR;
+
+    cycleMarkStroke: string = LINK_CYCLE_MARK_STROKE;
+    cycleMarkFill: string = LINK_CYCLE_MARK_FILL;
 }

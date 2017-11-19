@@ -127,105 +127,192 @@ export function paintTask(ctx: CanvasRenderingContext2D,
     }
 }
 
-// export function paintLink(ctx: CanvasRenderingContext2D,
-//                           pi: PaintInfo,
-//                           l: Link): void {
-//     const visual: LinkVisual = l.visual;
+export function paintLink(ctx: CanvasRenderingContext2D,
+                          pi: PaintInfo,
+                          cp: CyclePlan,
+                          l: Link): void {
+    if (l.from.type === 'task' && l.to.type === 'task') {
+        for (let i=0; i<cp.count; ++i) {
+            paintTaskTaskLink(ctx, pi, cp, l, i);
+        }
+        return;
+    }
+    if (l.from.type === 'cycle' && l.to.type === 'task') {
+        for (let i=0; i<cp.count; ++i) {
+            paintCycleTaskLink(ctx, pi, cp, l, i);
+        }
+        return;
+    }
+    if (l.from.type === 'task' && l.to.type === 'cycle') {
+        for (let i=0; i<cp.count; ++i) {
+            paintTaskCycleLink(ctx, pi, cp, l, i);
+        }
+        return;
+    }
+}
 
-//     const xFrom = roundPx(pi.timeMap.timePos(l.earlyTimeFrom));
-//     const xTo = roundPx(pi.timeMap.timePos(l.earlyTimeTo));
-//     const rightW = xTo > xFrom;
-//     const straightMode = xTo >= xFrom && l.lag >= 0;
-//     const horizArrow = rightW;
+function paintTaskTaskLink(ctx: CanvasRenderingContext2D,
+                           pi: PaintInfo,
+                           cp: CyclePlan,
+                           l: Link,
+                           instance: number): void {
+    const visual: LinkVisual = linkVisual(l);
 
-//     const midYFrom = taskMidY(l.from, pi);
-//     const midYTo = taskMidY(l.to, pi);
-//     const downW = midYTo > midYFrom;
-//     const yFrom = downW ? taskBarBotY(l.from, pi) : taskBarTopY(l.from, pi);
-//     const yTo = horizArrow ? midYTo : (downW ? taskBarTopY(l.to, pi) : taskBarBotY(l.to, pi));
-//     const xLagTo = roundPx(pi.timeMap.timePos(l.earlyTimeFrom+l.lag));
+    const from = cp.lookUpTask(l.from.planner as Task, instance);
+    const to = cp.lookUpTask(l.to.planner as Task, instance);
+    const earlyTimeFrom = l.from.getEarlyTime(cp, instance);
+    const earlyTimeTo = l.to.getEarlyTime(cp, instance);
 
-//     ctx.save();
-//     ctx.strokeStyle = visual.color;
+    const xFrom = roundPx(pi.timeMap.timePos(earlyTimeFrom));
+    const xTo = roundPx(pi.timeMap.timePos(earlyTimeTo));
+    const rightW = xTo > xFrom;
+    const straightMode = xTo >= xFrom && l.lag >= 0;
+    const horizArrow = rightW;
 
-//     if (straightMode) {
-//         ctx.beginPath();
-//         ctx.moveTo(xFrom, yFrom);
-//         ctx.lineTo(xFrom, yTo);
-//         ctx.stroke();
-//         let x = xFrom;
-//         if (horizArrow && l.lag > 0) {
-//             ctx.save();
-//             ctx.beginPath();
-//             ctx.strokeStyle = visual.lagColor;
-//             ctx.moveTo(x, yTo);
-//             ctx.lineTo(xLagTo, yTo);
-//             ctx.stroke();
-//             ctx.restore();
-//             x = xLagTo;
-//         }
-//         if (horizArrow && x !== xTo) {
-//             ctx.save();
-//             ctx.beginPath();
-//             ctx.setLineDash(SLACK_DASH);
-//             ctx.lineDashOffset = 0.5;
-//             ctx.moveTo(x, yTo);
-//             ctx.lineTo(xTo, yTo);
-//             ctx.stroke();
-//             ctx.restore();
-//         }
-//     }
-//     else {
-//         const yBack = roundPx(downW ? taskTopY(l.to, pi) : taskBotY(l.to, pi));
-//         ctx.beginPath();
-//         ctx.moveTo(xFrom, yFrom);
-//         ctx.lineTo(xFrom, yBack);
-//         ctx.stroke();
-//         let x = xFrom;
-//         if (l.lag !== 0) {
-//             const xToLag = roundPx(pi.timeMap.timePos(l.earlyTimeFrom + l.lag));
-//             ctx.save();
-//             ctx.strokeStyle = visual.lagColor;
-//             ctx.beginPath();
-//             ctx.moveTo(x, yBack);
-//             ctx.lineTo(xToLag, yBack);
-//             ctx.stroke();
-//             ctx.restore();
-//             x = xToLag;
-//         }
-//         ctx.beginPath();
-//         ctx.moveTo(x, yBack);
-//         ctx.lineTo(x, yTo);
-//         ctx.stroke();
-//         if (x !== xTo) {
-//             ctx.save();
-//             ctx.setLineDash(SLACK_DASH);
-//             ctx.lineDashOffset = 0.5;
-//             ctx.beginPath();
-//             ctx.moveTo(x, yTo);
-//             ctx.lineTo(xTo, yTo);
-//             ctx.stroke();
-//             ctx.restore();
-//         }
-//     }
+    const midYFrom = taskMidY(cp.lookUpTask(l.from.planner as Task, instance), pi);
+    const midYTo = taskMidY(to, pi);
+    const downW = midYTo > midYFrom;
+    const yFrom = downW ? taskBarBotY(from, pi) : taskBarTopY(from, pi);
+    const yTo = horizArrow ? midYTo : (downW ? taskBarTopY(to, pi) : taskBarBotY(to, pi));
+    const xLagTo = roundPx(pi.timeMap.timePos(earlyTimeFrom+l.lag));
 
-//     ctx.fillStyle = visual.color;
-//     ctx.beginPath();
-//     ctx.moveTo(xTo, yTo);
-//     if (horizArrow) {
-//         const basis = xTo - 5;
-//         ctx.lineTo(basis, yTo+3);
-//         ctx.lineTo(basis, yTo-3);
-//     }
-//     else {
-//         const basis = downW ? yTo - 5 : yTo + 5;
-//         ctx.lineTo(xTo-3, basis);
-//         ctx.lineTo(xTo+3, basis);
-//     }
-//     ctx.fill();
+    ctx.save();
+    ctx.strokeStyle = visual.color;
 
-//     ctx.restore();
-// }
+    if (straightMode) {
+        ctx.beginPath();
+        ctx.moveTo(xFrom, yFrom);
+        ctx.lineTo(xFrom, yTo);
+        ctx.stroke();
+        let x = xFrom;
+        if (horizArrow && l.lag > 0) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.strokeStyle = visual.lagColor;
+            ctx.moveTo(x, yTo);
+            ctx.lineTo(xLagTo, yTo);
+            ctx.stroke();
+            ctx.restore();
+            x = xLagTo;
+        }
+        if (horizArrow && x !== xTo) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.setLineDash(SLACK_DASH);
+            ctx.lineDashOffset = 0.5;
+            ctx.moveTo(x, yTo);
+            ctx.lineTo(xTo, yTo);
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+    else {
+        const yBack = roundPx(downW ? taskTopY(to, pi) : taskBotY(to, pi));
+        ctx.beginPath();
+        ctx.moveTo(xFrom, yFrom);
+        ctx.lineTo(xFrom, yBack);
+        ctx.stroke();
+        let x = xFrom;
+        if (l.lag !== 0) {
+            const xToLag = roundPx(pi.timeMap.timePos(earlyTimeFrom + l.lag));
+            ctx.save();
+            ctx.strokeStyle = visual.lagColor;
+            ctx.beginPath();
+            ctx.moveTo(x, yBack);
+            ctx.lineTo(xToLag, yBack);
+            ctx.stroke();
+            ctx.restore();
+            x = xToLag;
+        }
+        ctx.beginPath();
+        ctx.moveTo(x, yBack);
+        ctx.lineTo(x, yTo);
+        ctx.stroke();
+        if (x !== xTo) {
+            ctx.save();
+            ctx.setLineDash(SLACK_DASH);
+            ctx.lineDashOffset = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(x, yTo);
+            ctx.lineTo(xTo, yTo);
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+
+    ctx.fillStyle = visual.color;
+    ctx.beginPath();
+    ctx.moveTo(xTo, yTo);
+    if (horizArrow) {
+        const basis = xTo - 5;
+        ctx.lineTo(basis, yTo+3);
+        ctx.lineTo(basis, yTo-3);
+    }
+    else {
+        const basis = downW ? yTo - 5 : yTo + 5;
+        ctx.lineTo(xTo-3, basis);
+        ctx.lineTo(xTo+3, basis);
+    }
+    ctx.fill();
+
+    ctx.restore();
+}
+
+function paintCycleTaskLink(ctx: CanvasRenderingContext2D,
+                            pi: PaintInfo,
+                            cp: CyclePlan,
+                            l: Link,
+                            instance: number): void {
+    const visual: LinkVisual = linkVisual(l);
+
+    const to = cp.lookUpTask(l.to.planner as Task, instance);
+    const earlyTimeFrom = l.from.getEarlyTime(cp, instance);
+    const earlyTimeTo = l.to.getEarlyTime(cp, instance);
+
+    const xFrom = roundPx(pi.timeMap.timePos(earlyTimeFrom));
+    const xTo = roundPx(pi.timeMap.timePos(earlyTimeTo));
+    const y = taskMidY(to, pi);
+
+    ctx.save();
+    ctx.strokeStyle = visual.cycleMarkStroke;
+    ctx.fillStyle = visual.cycleMarkFill;
+    ctx.beginPath();
+    ctx.moveTo(xFrom + 8, y);
+    ctx.lineTo(xFrom, y+6);
+    ctx.lineTo(xFrom, y-6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+}
+function paintTaskCycleLink(ctx: CanvasRenderingContext2D,
+                            pi: PaintInfo,
+                            cp: CyclePlan,
+                            l: Link,
+                            instance: number): void {
+    const visual: LinkVisual = linkVisual(l);
+
+    const from = cp.lookUpTask(l.from.planner as Task, instance);
+    const earlyTimeFrom = l.from.getEarlyTime(cp, instance);
+    const earlyTimeTo = l.to.getEarlyTime(cp, instance);
+
+    const xFrom = roundPx(pi.timeMap.timePos(earlyTimeFrom));
+    const xTo = roundPx(pi.timeMap.timePos(earlyTimeTo));
+    const y = taskMidY(from, pi);
+
+    ctx.save();
+    ctx.strokeStyle = visual.cycleMarkStroke;
+    ctx.fillStyle = visual.cycleMarkFill;
+    ctx.beginPath();
+    ctx.moveTo(xTo - 8, y);
+    ctx.lineTo(xTo, y+6);
+    ctx.lineTo(xTo, y-6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+}
+
 
 function cycleVisual(cp: CyclePlan): CycleVisual {
     return cp.visual ? cp.visual : cp.cycle.visual;
@@ -233,6 +320,10 @@ function cycleVisual(cp: CyclePlan): CycleVisual {
 
 function taskVisual(tp: TaskPlan): TaskVisual {
     return tp.visual ? tp.visual : tp.task.visual;
+}
+
+function linkVisual(l: Link): LinkVisual {
+    return l.visual;
 }
 
 function roundPx(pos: number, thickness=1): number {
