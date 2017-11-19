@@ -1,7 +1,7 @@
 import { IEvent, EventDispatcher } from '../shared/event';
 import { de, mand } from '../shared/debug';
 
-export class Dock {
+export abstract class Dock {
     constructor(private _planner: Planner) {}
     private _links: Link[]  = [];
 
@@ -16,12 +16,17 @@ export class Dock {
     pushLink(link: Link): void {
         this._links.push(link);
     }
+
+    abstract get type(): string;
+
+    abstract getEarlyTime(cp: CyclePlan, instance: number): number;
+    abstract getLateTime(cp: CyclePlan, instance: number): number;
 }
 
-export class InDock extends Dock {
+export abstract class InDock extends Dock {
 }
 
-export class OutDock extends Dock {
+export abstract class OutDock extends Dock {
 }
 
 export class Link {
@@ -66,9 +71,9 @@ export class Link {
 export abstract class Task implements Planner {
     private _ind: number;
     private _name: string;
-    private _startIn    = new InDock(this);
-    private _startOut   = new OutDock(this);
-    private _finishOut  = new OutDock(this);
+    private _startIn    = new TaskStartInDock(this);
+    private _startOut   = new TaskStartOutDock(this);
+    private _finishOut  = new TaskFinishOutDock(this);
 
     private _nameEvent = new EventDispatcher<string>();
     protected _durationEvent = new EventDispatcher<number>();
@@ -172,8 +177,8 @@ export class AtomTask extends Task {
 
 export class Cycle implements Planner {
     private _name: string;
-    private _start          = new OutDock(this);
-    private _finish         = new InDock(this);
+    private _start          = new CycleStartOutDock(this);
+    private _finish         = new CycleFinishInDock(this);
     private _tasks: Task[]  = [];
     private _links: Link[]  = [];
 
@@ -370,6 +375,9 @@ export class CyclePlan {
         this._cycleTime = cycleTime;
     }
 
+    lookUpTask(task: Task, instance: number): TaskPlan {
+        return this._tasks[instance * this.cycle.tasks.length + task.ind];
+    }
 }
 
 interface Planner {
@@ -383,5 +391,96 @@ class PlanContext {
 
     lookUp(task: Task): TaskPlan {
         return this.taskPlans[task.ind];
+    }
+}
+
+class TaskStartInDock extends InDock {
+    constructor(task: Task) {
+        super(task);
+    }
+
+    get type(): string {
+        return 'task';
+    }
+
+    getEarlyTime(cp: CyclePlan, instance: number): number {
+        const tp = cp.lookUpTask(this.planner as Task, instance);
+        return tp.earlyStart;
+    }
+    getLateTime(cp: CyclePlan, instance: number): number {
+        const tp = cp.lookUpTask(this.planner as Task, instance);
+        return tp.lateStart;
+    }
+}
+
+class TaskStartOutDock extends OutDock {
+    constructor(task: Task) {
+        super(task);
+    }
+
+    get type(): string {
+        return 'task';
+    }
+
+    getEarlyTime(cp: CyclePlan, instance: number): number {
+        const tp = cp.lookUpTask(this.planner as Task, instance);
+        return tp.earlyStart;
+    }
+    getLateTime(cp: CyclePlan, instance: number): number {
+        const tp = cp.lookUpTask(this.planner as Task, instance);
+        return tp.lateStart;
+    }
+}
+
+class TaskFinishOutDock extends OutDock {
+    constructor(task: Task) {
+        super(task);
+    }
+
+    get type(): string {
+        return 'task';
+    }
+
+    getEarlyTime(cp: CyclePlan, instance: number): number {
+        const tp = cp.lookUpTask(this.planner as Task, instance);
+        return tp.earlyFinish;
+    }
+    getLateTime(cp: CyclePlan, instance: number): number {
+        const tp = cp.lookUpTask(this.planner as Task, instance);
+        return tp.lateFinish;
+    }
+}
+
+class CycleStartOutDock extends OutDock {
+    constructor(cycle: Cycle) {
+        super(cycle);
+    }
+
+    get type(): string {
+        return 'cycle';
+    }
+
+    getEarlyTime(cp: CyclePlan, instance: number): number {
+        return instance * cp.cycleTime;
+    }
+    getLateTime(cp: CyclePlan, instance: number): number {
+        return instance * cp.cycleTime;
+    }
+}
+
+class CycleFinishInDock extends InDock {
+    constructor(cycle: Cycle) {
+        super(cycle);
+    }
+
+    get type(): string {
+        return 'cycle';
+    }
+
+    getEarlyTime(cp: CyclePlan, instance: number): number {
+        return (instance+1) * cp.cycleTime;
+    }
+    getLateTime(cp: CyclePlan, instance: number): number {
+        return (instance+1) * cp.cycleTime;
     }
 }
