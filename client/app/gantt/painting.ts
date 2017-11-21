@@ -304,9 +304,9 @@ function paintTaskCycleLink(ctx: CanvasRenderingContext2D,
     ctx.strokeStyle = visual.cycleMarkStroke;
     ctx.fillStyle = visual.cycleMarkFill;
     ctx.beginPath();
-    ctx.moveTo(xTo - 8, y);
-    ctx.lineTo(xTo, y+6);
-    ctx.lineTo(xTo, y-6);
+    ctx.moveTo(xTo, y);
+    ctx.lineTo(xTo - 8, y+6);
+    ctx.lineTo(xTo - 8, y-6);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
