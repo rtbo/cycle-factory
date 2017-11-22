@@ -10,7 +10,7 @@
         </tr>
     </thead>
     <tbody>
-        <tr class="tasktablerow" *ngFor="let tp of plan.tasks; index as ind">
+        <tr class="tasktablerow" *ngFor="let tp of planTasks; index as ind">
             <th class="text-left">{{ind+1}}</th>
             <td class="text-left" [(gcContentEditableModel)]="tp.task.name"></td>
             <td class="text-center" [(gcContentEditableModel)]="tp.task.duration" type="number"></td>

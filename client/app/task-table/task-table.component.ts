@@ -1,7 +1,7 @@
 import {
     AfterViewInit, OnChanges, Component, ElementRef, OnInit, HostListener, ViewChild
 } from '@angular/core';
-import { Task, AtomTask, CyclePlan } from '../model/cycle';
+import { Task, AtomTask, CyclePlan, TaskPlan } from '../model/cycle';
 import { CycleService } from '../model/cycle.service';
 
 import { GanttHeightMapService, VBounds, TableVBounds } from '../gantt/gantt-height-map.service';
@@ -26,6 +26,10 @@ export class TaskTableComponent implements OnInit, AfterViewInit, OnChanges {
     plan: CyclePlan;
     private cycleSubscriptions = [];
     readonly addByNamePhrase = 'Type in here...';
+
+    get planTasks(): TaskPlan[] {
+        return this.plan.cycle.tasks.map((t) => this.plan.lookUpTask(t, 0));
+    }
 
     ngOnInit() {
         this.cycleService.currentPlanChange.subscribe(

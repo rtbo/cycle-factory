@@ -321,10 +321,6 @@ export class CyclePlan {
         return this._cycle;
     }
 
-    get tasks(): TaskPlan[] {
-        return this._tasks;
-    }
-
     get cycleTime(): number {
         return this._cycleTime;
     }
