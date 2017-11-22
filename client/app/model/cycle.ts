@@ -258,6 +258,10 @@ export class Cycle implements Planner {
         ));
     }
 
+    plan(count: number): CyclePlan {
+        return planCycle(this, count);
+    }
+
     forwardPlan(ctx: PlanContext, time: number): number {
         return time;
     }
@@ -277,12 +281,6 @@ export class Cycle implements Planner {
 }
 
 // plan API
-
-export function planCycle(cycle: Cycle, count: number): CyclePlan {
-    const cp = new CyclePlan(cycle);
-    cp.plan(count);
-    return cp;
-}
 
 export class TaskPlan {
     private _task: Task;
@@ -311,16 +309,13 @@ export class TaskPlan {
 }
 
 export class CyclePlan {
-    private _cycle: Cycle;
-    private _tasks: TaskPlan[] = [];
-    private _cycleTime: number;
-    private _count: number;
 
     public visual: any;
 
-    constructor(cycle: Cycle) {
-        this._cycle = cycle;
-    }
+    constructor(private _cycle: Cycle,
+                private _tasks: TaskPlan[],
+                private _cycleTime: number,
+                private _count: number) {}
 
     get cycle(): Cycle {
         return this._cycle;
@@ -336,43 +331,6 @@ export class CyclePlan {
 
     get count(): number {
         return this._count;
-    }
-
-    plan(count: number): void {
-        const cycle = this._cycle;
-        let tasks: TaskPlan[] = [];
-        cycle.tasks.forEach((t, i) => {
-            t.ind = i;
-        });
-        tasks = cycle.tasks.map(t => {
-            return new TaskPlan(t);
-        });
-
-        const ctx = new PlanContext(tasks);
-
-        let time = 0;
-        for (const t of cycle.startingTasks) {
-            time = Math.max(time, t.forwardPlan(ctx, 0));
-        }
-        for (const l of cycle.start.links) {
-            time = Math.max(time, l.to.planner.forwardPlan(ctx, l.lag));
-        }
-
-        const cycleTime = time;
-        tasks.forEach(t => {
-            t.lateFinish = cycleTime;
-        });
-
-        for (const t of cycle.finishingTasks) {
-            time = Math.min(time, t.backwardPlan(ctx, cycleTime));
-        }
-        for (const l of cycle.finish.links) {
-            time = Math.min(time, l.from.planner.backwardPlan(ctx, cycleTime-l.lag));
-        }
-
-        this._tasks = tasks;
-        this._count = count;
-        this._cycleTime = cycleTime;
     }
 
     lookUpTask(task: Task, instance: number): TaskPlan {
@@ -483,4 +441,38 @@ class CycleFinishInDock extends InDock {
     getLateTime(cp: CyclePlan, instance: number): number {
         return (instance+1) * cp.cycleTime;
     }
+}
+
+function planCycle(cycle: Cycle, count: number): CyclePlan {
+    let tasks: TaskPlan[] = [];
+    cycle.tasks.forEach((t, i) => {
+        t.ind = i;
+    });
+    tasks = cycle.tasks.map(t => {
+        return new TaskPlan(t);
+    });
+
+    const ctx = new PlanContext(tasks);
+
+    let time = 0;
+    for (const t of cycle.startingTasks) {
+        time = Math.max(time, t.forwardPlan(ctx, 0));
+    }
+    for (const l of cycle.start.links) {
+        time = Math.max(time, l.to.planner.forwardPlan(ctx, l.lag));
+    }
+
+    const cycleTime = time;
+    tasks.forEach(t => {
+        t.lateFinish = cycleTime;
+    });
+
+    for (const t of cycle.finishingTasks) {
+        time = Math.min(time, t.backwardPlan(ctx, cycleTime));
+    }
+    for (const l of cycle.finish.links) {
+        time = Math.min(time, l.from.planner.backwardPlan(ctx, cycleTime-l.lag));
+    }
+
+    return new CyclePlan(cycle, tasks, cycleTime, count);
 }

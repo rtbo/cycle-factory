@@ -31,7 +31,7 @@ describe('Basic Cycle', () => {
     });
 
     it('plans correctly', () => {
-        const cp = api.planCycle(cycle, 1);
+        const cp = cycle.plan(1);
         expect(cp.tasks.length).toBe(3);
         expect(cp.tasks[0].earlyStart).toBe(0);
         expect(cp.tasks[0].earlyFinish).toBe(3);

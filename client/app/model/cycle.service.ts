@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 
-import { Task, AtomTask, Cycle, Link, CyclePlan, planCycle } from './cycle';
+import { Task, AtomTask, Cycle, Link, CyclePlan } from './cycle';
 import { CycleVisual, TaskVisual, LinkVisual } from './visuals';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class CycleService {
         const cycle = this.makeTestCycle();
         attachVisuals(cycle);
         this._currentCycle = new BehaviorSubject( cycle );
-        this._currentPlan = new BehaviorSubject( planCycle(cycle, 1) );
+        this._currentPlan = new BehaviorSubject( cycle.plan(1) );
         this.subscribeToCycle(cycle);
     }
 
@@ -70,8 +70,7 @@ export class CycleService {
     private subscribeToCycle(cycle: Cycle) {
         this._subscriptions = [
             cycle.planDirtyEvent.subscribe(() => {
-                const plan = planCycle(cycle, 1);
-                this._currentPlan.next(plan);
+                this._currentPlan.next(cycle.plan(1));
             }),
             cycle.taskAddEvent.subscribe(attachTaskVisual),
             cycle.linkAddEvent.subscribe(attachLinkVisual),
