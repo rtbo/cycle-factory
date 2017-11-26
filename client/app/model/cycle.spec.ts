@@ -3,6 +3,7 @@ import * as api from './cycle';
 
 describe('Basic Cycle', () => {
     let cycle: api.Cycle;
+    const ct = 10;
     beforeEach(() => {
         cycle = new api.Cycle;
 
@@ -30,17 +31,33 @@ describe('Basic Cycle', () => {
         expect(ft.length).toBe(0);
     });
 
+    function testXCycles(count: number) {
+        const cp = cycle.plan(count);
+        expect(cp.count).toBe(count);
+        expect(cp.cycleTime).toBe(ct);
+        expect(cp.planUntil).toBe(ct*count);
+        for (let i=0; i<count; ++i) {
+            const offset = ct*i;
+            expect(cp.lookUpTask(cycle.tasks[0], i).earlyStart).toBe(offset+0);
+            expect(cp.lookUpTask(cycle.tasks[0], i).earlyFinish).toBe(offset+3);
+            expect(cp.lookUpTask(cycle.tasks[1], i).earlyStart).toBe(offset+3);
+            expect(cp.lookUpTask(cycle.tasks[1], i).earlyFinish).toBe(offset+5);
+            expect(cp.lookUpTask(cycle.tasks[2], i).earlyStart).toBe(offset+5);
+            expect(cp.lookUpTask(cycle.tasks[2], i).earlyFinish).toBe(offset+10);
+
+        }
+    }
+
+
     it('plans correctly 1 cycle', () => {
-        const cp = cycle.plan(1);
-        expect(cp.count).toBe(1);
-        expect(cp.lookUpTask(cycle.tasks[0], 0).earlyStart).toBe(0);
-        expect(cp.lookUpTask(cycle.tasks[0], 0).earlyFinish).toBe(3);
-        expect(cp.lookUpTask(cycle.tasks[1], 0).earlyStart).toBe(3);
-        expect(cp.lookUpTask(cycle.tasks[1], 0).earlyFinish).toBe(5);
-        expect(cp.lookUpTask(cycle.tasks[2], 0).earlyStart).toBe(5);
-        expect(cp.lookUpTask(cycle.tasks[2], 0).earlyFinish).toBe(10);
-        expect(cp.cycleTime).toBe(10);
-        expect(cp.planUntil).toBe(10);
+        testXCycles(1);
     });
 
+    it('plans correctly 2 cycles', () => {
+        testXCycles(2);
+    });
+
+    it('plans correctly 3 cycles', () => {
+        testXCycles(3);
+    });
 });

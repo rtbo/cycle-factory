@@ -120,8 +120,8 @@ export abstract class Task implements Planner {
         return this._finishOut;
     }
 
-    abstract forwardPlan(ctx: PlanContext, time: number): number;
-    abstract backwardPlan(ctx: PlanContext, time: number): number;
+    abstract forwardPlan(ctx: PlanContext, time: number, instance: number): number;
+    abstract backwardPlan(ctx: PlanContext, time: number, instance: number): number;
 }
 
 export class AtomTask extends Task {
@@ -141,8 +141,8 @@ export class AtomTask extends Task {
         this._durationEvent.dispatch(value);
     }
 
-    forwardPlan(ctx: PlanContext, time: number): number {
-        const tp: TaskPlan = ctx.lookUp(this);
+    forwardPlan(ctx: PlanContext, time: number, instance: number): number {
+        const tp: TaskPlan = ctx.lookUp(this, instance);
 
         tp.earlyStart = Math.max(time, tp.earlyStart);
         tp.earlyFinish = tp.earlyStart + this.duration;
@@ -150,16 +150,16 @@ export class AtomTask extends Task {
         let res = tp.earlyFinish;
 
         for (const l of this.startOut.links) {
-            res = Math.max(res, l.to.planner.forwardPlan(ctx, tp.earlyStart+l.lag));
+            res = Math.max(res, l.to.planner.forwardPlan(ctx, tp.earlyStart+l.lag, instance));
         }
         for (const l of this.finishOut.links) {
-            res = Math.max(res, l.to.planner.forwardPlan(ctx, tp.earlyFinish+l.lag));
+            res = Math.max(res, l.to.planner.forwardPlan(ctx, tp.earlyFinish+l.lag, instance));
         }
 
         return res;
     }
-    backwardPlan(ctx: PlanContext, time: number): number {
-        const tp: TaskPlan = ctx.lookUp(this);
+    backwardPlan(ctx: PlanContext, time: number, instance: number): number {
+        const tp: TaskPlan = ctx.lookUp(this, instance);
 
         tp.lateFinish = Math.min(time, tp.lateFinish);
         tp.lateStart = tp.lateFinish - this.duration;
@@ -167,7 +167,7 @@ export class AtomTask extends Task {
         let res = tp.lateStart;
 
         for (const l of this.startIn.links) {
-            res = Math.min(res, l.from.planner.backwardPlan(ctx, tp.lateStart-l.lag));
+            res = Math.min(res, l.from.planner.backwardPlan(ctx, tp.lateStart-l.lag, instance));
         }
 
         return res;
@@ -259,11 +259,15 @@ export class Cycle implements Planner {
     }
 
     plan(count: number): CyclePlan {
+        this.tasks.forEach((t, i) => {
+            t.ind = i;
+        });
         return planCycle(this, count);
     }
 
     forwardPlan(ctx: PlanContext, time: number): number {
-        return time;
+        ctx.cycleEnd = Math.max(time, ctx.cycleEnd);
+        return ctx.cycleEnd;
     }
     backwardPlan(ctx: PlanContext, time: number): number {
         return time;
@@ -341,19 +345,29 @@ export class CyclePlan {
             return Math.max(prev, t.earlyFinish);
         }, this._tasks[0].earlyFinish);
     }
+
+    get dbgString(): string {
+        let s = '';
+        for(const tp of this._tasks) {
+            s = s + tp.task.name+' from '+tp.earlyStart+' to '+tp.earlyFinish+'\n';
+        }
+        return s;
+    }
 }
 
 interface Planner {
-    forwardPlan(ctx: PlanContext, time: number): number;
-    backwardPlan(ctx: PlanContext, time: number): number;
+    forwardPlan(ctx: PlanContext, time: number, instance: number): number;
+    backwardPlan(ctx: PlanContext, time: number, instance: number): number;
 }
 
 class PlanContext {
-    constructor(private taskPlans: TaskPlan[]) {
+    cycleEnd: number;
+
+    constructor(private taskPlans: TaskPlan[], private taskCount: number) {
     }
 
-    lookUp(task: Task): TaskPlan {
-        return this.taskPlans[task.ind];
+    lookUp(task: Task, instance: number): TaskPlan {
+        return this.taskPlans[task.ind + instance*this.taskCount];
     }
 }
 
@@ -450,33 +464,49 @@ class CycleFinishInDock extends InDock {
 
 function planCycle(cycle: Cycle, count: number): CyclePlan {
     let tasks: TaskPlan[] = [];
-    cycle.tasks.forEach((t, i) => {
-        t.ind = i;
-    });
-    tasks = cycle.tasks.map(t => {
-        return new TaskPlan(t);
-    });
+    for (let i=0; i<count; ++i) {
+        tasks = tasks.concat(cycle.tasks.map(t => {
+            return new TaskPlan(t);
+        }));
+    }
 
-    const ctx = new PlanContext(tasks);
+    const ctx = new PlanContext(tasks, cycle.tasks.length);
 
     let time = 0;
-    for (const t of cycle.startingTasks) {
-        time = Math.max(time, t.forwardPlan(ctx, 0));
-    }
-    for (const l of cycle.start.links) {
-        time = Math.max(time, l.to.planner.forwardPlan(ctx, l.lag));
-    }
+    let cycleTime: number;
+    let lastCE = 0;
+    for (let i=0; i<count; ++i) {
+        ctx.cycleEnd = -1;
+        for (const t of cycle.startingTasks) {
+            time = Math.max(time, t.forwardPlan(ctx, lastCE, i));
+        }
+        for (const l of cycle.start.links) {
+            time = Math.max(time, l.to.planner.forwardPlan(ctx, lastCE+l.lag, i));
+        }
 
-    const cycleTime = time;
-    tasks.forEach(t => {
-        t.lateFinish = cycleTime;
-    });
+        const ce = ctx.cycleEnd === -1 ? time : ctx.cycleEnd;
+        const ct = ce - lastCE;
+        lastCE = ce;
 
-    for (const t of cycle.finishingTasks) {
-        time = Math.min(time, t.backwardPlan(ctx, cycleTime));
-    }
-    for (const l of cycle.finish.links) {
-        time = Math.min(time, l.from.planner.backwardPlan(ctx, cycleTime-l.lag));
+        if (i === 0) {
+            cycleTime = ct;
+        }
+        else {
+            // tslint:disable-next-line:no-unused-expression
+            de && mand (ct === cycleTime);
+        }
+
+        tasks.slice(i*cycle.tasks.length, (i+1)*cycle.tasks.length).forEach(t => {
+            t.lateFinish = Math.max(ct * i, t.earlyFinish);
+        });
+
+        for (const t of cycle.finishingTasks) {
+            const tp = ctx.lookUp(t, i);
+            time = Math.min(time, t.backwardPlan(ctx, tp.earlyStart+cycleTime, i));
+        }
+        for (const l of cycle.finish.links) {
+            time = Math.min(time, l.from.planner.backwardPlan(ctx, ce-l.lag, i));
+        }
     }
 
     return new CyclePlan(cycle, tasks, cycleTime, count);
