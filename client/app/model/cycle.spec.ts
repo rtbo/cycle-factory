@@ -1,5 +1,5 @@
 
-import * as api from './cycle2';
+import * as api from './cycle';
 
 describe('Basic Cycle', () => {
     let cycle: api.Cycle;
@@ -32,13 +32,12 @@ describe('Basic Cycle', () => {
 
     it('plans correctly', () => {
         const cp = cycle.plan(1);
-        expect(cp.tasks.length).toBe(3);
-        expect(cp.tasks[0].earlyStart).toBe(0);
-        expect(cp.tasks[0].earlyFinish).toBe(3);
-        expect(cp.tasks[1].earlyStart).toBe(3);
-        expect(cp.tasks[1].earlyFinish).toBe(5);
-        expect(cp.tasks[2].earlyStart).toBe(5);
-        expect(cp.tasks[2].earlyFinish).toBe(10);
+        expect(cp.lookUpTask(cycle.tasks[0], 0).earlyStart).toBe(0);
+        expect(cp.lookUpTask(cycle.tasks[0], 0).earlyFinish).toBe(3);
+        expect(cp.lookUpTask(cycle.tasks[1], 0).earlyStart).toBe(3);
+        expect(cp.lookUpTask(cycle.tasks[1], 0).earlyFinish).toBe(5);
+        expect(cp.lookUpTask(cycle.tasks[2], 0).earlyStart).toBe(5);
+        expect(cp.lookUpTask(cycle.tasks[2], 0).earlyFinish).toBe(10);
         expect(cp.cycleTime).toBe(10);
     });
 });
