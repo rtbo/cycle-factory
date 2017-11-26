@@ -120,8 +120,8 @@ export abstract class Task implements Planner {
         return this._finishOut;
     }
 
-    abstract forwardPlan(ctx: PlanContext, time: number, instance: number): number;
-    abstract backwardPlan(ctx: PlanContext, time: number, instance: number): number;
+    abstract forwardPlan(ctx: PlanContext, dock: InDock, time: number, instance: number): number;
+    abstract backwardPlan(ctx: PlanContext, dock: OutDock, time: number, instance: number): number;
 }
 
 export class AtomTask extends Task {
@@ -141,7 +141,7 @@ export class AtomTask extends Task {
         this._durationEvent.dispatch(value);
     }
 
-    forwardPlan(ctx: PlanContext, time: number, instance: number): number {
+    forwardPlan(ctx: PlanContext, dock: InDock, time: number, instance: number): number {
         const tp: TaskPlan = ctx.lookUp(this, instance);
 
         tp.earlyStart = Math.max(time, tp.earlyStart);
@@ -150,24 +150,33 @@ export class AtomTask extends Task {
         let res = tp.earlyFinish;
 
         for (const l of this.startOut.links) {
-            res = Math.max(res, l.to.planner.forwardPlan(ctx, tp.earlyStart+l.lag, instance));
+            res = Math.max(res, l.to.planner.forwardPlan(ctx, l.to, tp.earlyStart+l.lag, instance));
         }
         for (const l of this.finishOut.links) {
-            res = Math.max(res, l.to.planner.forwardPlan(ctx, tp.earlyFinish+l.lag, instance));
+            res = Math.max(res, l.to.planner.forwardPlan(ctx, l.to, tp.earlyFinish+l.lag, instance));
         }
 
         return res;
     }
-    backwardPlan(ctx: PlanContext, time: number, instance: number): number {
+    backwardPlan(ctx: PlanContext, dock: OutDock, time: number, instance: number): number {
+        // tslint:disable-next-line:no-unused-expression
+        de && mand(dock === this.startOut || dock === this.finishOut);
+
         const tp: TaskPlan = ctx.lookUp(this, instance);
 
-        tp.lateFinish = Math.min(time, tp.lateFinish);
-        tp.lateStart = tp.lateFinish - this.duration;
+        if (dock === this.finishOut) {
+            tp.lateFinish = Math.min(time, tp.lateFinish);
+            tp.lateStart = tp.lateFinish - this.duration;
+        }
+        else {
+            tp.lateStart = Math.min(time, tp.lateStart);
+            tp.lateFinish = tp.lateStart + this.duration;
+        }
 
         let res = tp.lateStart;
 
         for (const l of this.startIn.links) {
-            res = Math.min(res, l.from.planner.backwardPlan(ctx, tp.lateStart-l.lag, instance));
+            res = Math.min(res, l.from.planner.backwardPlan(ctx, l.from, tp.lateStart-l.lag, instance));
         }
 
         return res;
@@ -221,13 +230,13 @@ export class Cycle implements Planner {
 
     get startingTasks(): Task[] {
         return this._tasks.filter(t => {
-            return t.startOut.links.length === 0 && t.finishOut.links.length === 0;
+            return t.startIn.links.length === 0;
         });
     }
 
     get finishingTasks(): Task[] {
         return this._tasks.filter(t => {
-            return t.startIn.links.length === 0;
+            return t.startOut.links.length === 0 && t.finishOut.links.length === 0;
         });
     }
 
@@ -265,11 +274,11 @@ export class Cycle implements Planner {
         return planCycle(this, count);
     }
 
-    forwardPlan(ctx: PlanContext, time: number): number {
+    forwardPlan(ctx: PlanContext, dock: InDock, time: number, instance: number): number {
         ctx.cycleEnd = Math.max(time, ctx.cycleEnd);
         return ctx.cycleEnd;
     }
-    backwardPlan(ctx: PlanContext, time: number): number {
+    backwardPlan(ctx: PlanContext, dock: OutDock, time: number, instance: number): number {
         return time;
     }
 
@@ -348,16 +357,17 @@ export class CyclePlan {
 
     get dbgString(): string {
         let s = '';
-        for(const tp of this._tasks) {
+        for (const tp of this._tasks) {
             s = s + tp.task.name+' from '+tp.earlyStart+' to '+tp.earlyFinish+'\n';
+            s = s + Array(tp.task.name.length+1).join(' ')+' from '+tp.lateStart+' to '+tp.lateFinish+'\n';
         }
         return s;
     }
 }
 
 interface Planner {
-    forwardPlan(ctx: PlanContext, time: number, instance: number): number;
-    backwardPlan(ctx: PlanContext, time: number, instance: number): number;
+    forwardPlan(ctx: PlanContext, dock: InDock, time: number, instance: number): number;
+    backwardPlan(ctx: PlanContext, dock: OutDock, time: number, instance: number): number;
 }
 
 class PlanContext {
@@ -478,10 +488,10 @@ function planCycle(cycle: Cycle, count: number): CyclePlan {
     for (let i=0; i<count; ++i) {
         ctx.cycleEnd = -1;
         for (const t of cycle.startingTasks) {
-            time = Math.max(time, t.forwardPlan(ctx, lastCE, i));
+            time = Math.max(time, t.forwardPlan(ctx, t.startIn, lastCE, i));
         }
         for (const l of cycle.start.links) {
-            time = Math.max(time, l.to.planner.forwardPlan(ctx, lastCE+l.lag, i));
+            time = Math.max(time, l.to.planner.forwardPlan(ctx, l.to, lastCE+l.lag, i));
         }
 
         const ce = ctx.cycleEnd === -1 ? time : ctx.cycleEnd;
@@ -496,16 +506,20 @@ function planCycle(cycle: Cycle, count: number): CyclePlan {
             de && mand (ct === cycleTime);
         }
 
+        // initialize tasks for backward plan
         tasks.slice(i*cycle.tasks.length, (i+1)*cycle.tasks.length).forEach(t => {
+            t.lateStart = Math.max(ct * i, t.earlyStart);
             t.lateFinish = Math.max(ct * i, t.earlyFinish);
         });
 
         for (const t of cycle.finishingTasks) {
             const tp = ctx.lookUp(t, i);
-            time = Math.min(time, t.backwardPlan(ctx, tp.earlyStart+cycleTime, i));
+            const lf = Math.max(ct * i, tp.earlyStart + cycleTime);
+            tp.lateFinish = lf;
+            time = Math.min(time, t.backwardPlan(ctx, t.finishOut, lf, i));
         }
         for (const l of cycle.finish.links) {
-            time = Math.min(time, l.from.planner.backwardPlan(ctx, ce-l.lag, i));
+            time = Math.min(time, l.from.planner.backwardPlan(ctx, l.from, ce-l.lag, i));
         }
     }
 
