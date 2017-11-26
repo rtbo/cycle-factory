@@ -29,7 +29,8 @@ export function paintBackground(ctx: CanvasRenderingContext2D, pi: PaintInfo): v
 }
 
 export function paintRuler(ctx: CanvasRenderingContext2D, pi: PaintInfo): void {
-    const top = roundPx(pi.heightMap.head.top);
+    // const top = roundPx(pi.heightMap.head.top);
+    const top = roundPx(0);
     const bottom = roundPx(pi.heightMap.head.bottom);
     const canvasBottom = roundPx(pi.heightMap.table.bottom);
 
