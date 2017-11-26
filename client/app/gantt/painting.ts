@@ -106,22 +106,24 @@ export function paintTask(ctx: CanvasRenderingContext2D,
     if (tp.slack > 0) {
         const markerH = 5;
         const endSlack = roundPx(pi.timeMap.timePos(tp.lateFinish));
+        const midYOffset = 3;
+        const ySlack = midY + midYOffset;
         if (endSlack - markerH > right) {
             ctx.save();
             ctx.setLineDash(SLACK_DASH);
             ctx.lineDashOffset = 0.5;
             ctx.beginPath();
-            ctx.moveTo(right, midY);
-            ctx.lineTo(endSlack-markerH, midY);
+            ctx.moveTo(right, ySlack);
+            ctx.lineTo(endSlack-markerH, ySlack);
             ctx.stroke();
             ctx.restore();
         }
         ctx.save();
         ctx.fillStyle = TASK_SLACK_FILL;
         ctx.beginPath();
-        ctx.moveTo(endSlack-markerH, midY);
-        ctx.lineTo(endSlack, midY+3);
-        ctx.lineTo(endSlack, midY-3);
+        ctx.moveTo(endSlack-markerH, ySlack);
+        ctx.lineTo(endSlack, ySlack+3);
+        ctx.lineTo(endSlack, ySlack-3);
         ctx.fill();
         ctx.restore();
     }
@@ -157,6 +159,7 @@ function paintTaskTaskLink(ctx: CanvasRenderingContext2D,
                            l: Link,
                            instance: number): void {
     const visual: LinkVisual = linkVisual(l);
+    const midYToOffset = -3;
 
     const from = cp.lookUpTask(l.from.planner as Task, instance);
     const to = cp.lookUpTask(l.to.planner as Task, instance);
@@ -170,7 +173,7 @@ function paintTaskTaskLink(ctx: CanvasRenderingContext2D,
     const horizArrow = rightW;
 
     const midYFrom = taskMidY(cp.lookUpTask(l.from.planner as Task, instance), pi);
-    const midYTo = taskMidY(to, pi);
+    const midYTo = taskMidY(to, pi)+midYToOffset;
     const downW = midYTo > midYFrom;
     const yFrom = downW ? taskBarBotY(from, pi) : taskBarTopY(from, pi);
     const yTo = horizArrow ? midYTo : (downW ? taskBarTopY(to, pi) : taskBarBotY(to, pi));
