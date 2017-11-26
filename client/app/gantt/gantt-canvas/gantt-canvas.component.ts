@@ -110,7 +110,9 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
     }
 
     paintCanvas(): void {
-        const ctx: CanvasRenderingContext2D = this.canvasRef.nativeElement.getContext('2d');
+        const ctx: CanvasRenderingContext2D = this.canvasRef.nativeElement.getContext('2d', {alpha: false});
+        // TODO: fetch style from table
+        ctx.font = '14px "Helvetica Neue", Helvetica, Arial, sans-serif';
 
         const pi: PaintInfo = {
             canvasWidth: this._canvasWidth,

@@ -50,10 +50,11 @@ export function paintRuler(ctx: CanvasRenderingContext2D, pi: PaintInfo): void {
     ctx.fillStyle = TEXT_FG;
     for (const g of pi.timeGrads) {
         ctx.beginPath();
-        ctx.moveTo(g.pos + 0.5, top);
-        ctx.lineTo(g.pos + 0.5, canvasBottom);
+        const pos = roundPx(g.pos);
+        ctx.moveTo(pos, top);
+        ctx.lineTo(pos, canvasBottom);
         ctx.stroke();
-        ctx.fillText(g.time.toString(), g.pos + 5.5, bottom - 5.5);
+        ctx.fillText(g.time.toString(), pos+5, bottom-5);
     }
 }
 
