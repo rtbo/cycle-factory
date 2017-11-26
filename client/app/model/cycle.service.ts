@@ -5,6 +5,8 @@ import { Observable } from 'rxjs/Observable';
 import { Task, AtomTask, Cycle, Link, CyclePlan } from './cycle';
 import { CycleVisual, TaskVisual, LinkVisual } from './visuals';
 
+const DEFAULT_PLAN_COUNT = 3;
+
 @Injectable()
 export class CycleService {
 
@@ -16,7 +18,7 @@ export class CycleService {
         const cycle = this.makeTestCycle();
         attachVisuals(cycle);
         this._currentCycle = new BehaviorSubject( cycle );
-        this._currentPlan = new BehaviorSubject( cycle.plan(1) );
+        this._currentPlan = new BehaviorSubject( cycle.plan(DEFAULT_PLAN_COUNT) );
         this.subscribeToCycle(cycle);
     }
 
@@ -70,7 +72,7 @@ export class CycleService {
     private subscribeToCycle(cycle: Cycle) {
         this._subscriptions = [
             cycle.planDirtyEvent.subscribe(() => {
-                this._currentPlan.next(cycle.plan(1));
+                this._currentPlan.next(cycle.plan(DEFAULT_PLAN_COUNT));
             }),
             cycle.taskAddEvent.subscribe(attachTaskVisual),
             cycle.linkAddEvent.subscribe(attachLinkVisual),
