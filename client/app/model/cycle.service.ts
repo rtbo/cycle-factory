@@ -62,9 +62,9 @@ export class CycleService {
         cycle.pushLink(Link.createLink(cycle.start, t1.startIn));
         cycle.pushLink(Link.createLink(t1.finishOut, t2.startIn));
         cycle.pushLink(Link.createLink(t2.finishOut, t4.startIn));
-        cycle.pushLink(Link.createLink(t1.finishOut, t3.startIn, -2));
-        cycle.pushLink(Link.createLink(t3.finishOut, t4.startIn));
-        cycle.pushLink(Link.createLink(t4.finishOut, cycle.finish));
+        cycle.pushLink(Link.createLink(t2.finishOut, t3.startIn));
+        cycle.pushLink(Link.createLink(t3.finishOut, t4.startIn, -1));
+        cycle.pushLink(Link.createLink(t3.finishOut, cycle.finish));
 
         return cycle;
     }
