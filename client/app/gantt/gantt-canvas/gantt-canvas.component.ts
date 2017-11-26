@@ -76,7 +76,7 @@ export class GanttCanvasComponent implements AfterViewChecked, OnInit {
         const top = canvasRect.top;
         const timeMap = this.ganttTimeMapService.timeMap;
         // const plan = this.plan;
-        const cycleWidth = this.plan ? timeMap.timePos(this.plan.cycleTime) : 0;
+        const cycleWidth = this.plan ? timeMap.timePos(this.plan.planUntil) : 0;
         const width = Math.floor(Math.max(divWidth, cycleWidth));
         let res = false;
 

@@ -351,8 +351,8 @@ export class CyclePlan {
 
     get planUntil(): number {
         return this._tasks.slice(1).reduce((prev: number, t: TaskPlan) => {
-            return Math.max(prev, t.earlyFinish);
-        }, this._tasks[0].earlyFinish);
+            return Math.max(prev, t.lateFinish);
+        }, this._tasks[0].lateFinish);
     }
 
     get dbgString(): string {
