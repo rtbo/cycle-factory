@@ -315,7 +315,10 @@ export class CyclePlan {
     constructor(private _cycle: Cycle,
                 private _tasks: TaskPlan[],
                 private _cycleTime: number,
-                private _count: number) {}
+                private _count: number) {
+        // tslint:disable-next-line:no-unused-expression
+        de && mand(_tasks.length >= 1);
+    }
 
     get cycle(): Cycle {
         return this._cycle;
@@ -331,6 +334,12 @@ export class CyclePlan {
 
     lookUpTask(task: Task, instance: number): TaskPlan {
         return this._tasks[instance * this.cycle.tasks.length + task.ind];
+    }
+
+    get planUntil(): number {
+        return this._tasks.slice(1).reduce((prev: number, t: TaskPlan) => {
+            return Math.max(prev, t.earlyFinish);
+        }, this._tasks[0].earlyFinish);
     }
 }
 

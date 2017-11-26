@@ -30,8 +30,9 @@ describe('Basic Cycle', () => {
         expect(ft.length).toBe(0);
     });
 
-    it('plans correctly', () => {
+    it('plans correctly 1 cycle', () => {
         const cp = cycle.plan(1);
+        expect(cp.count).toBe(1);
         expect(cp.lookUpTask(cycle.tasks[0], 0).earlyStart).toBe(0);
         expect(cp.lookUpTask(cycle.tasks[0], 0).earlyFinish).toBe(3);
         expect(cp.lookUpTask(cycle.tasks[1], 0).earlyStart).toBe(3);
@@ -39,5 +40,7 @@ describe('Basic Cycle', () => {
         expect(cp.lookUpTask(cycle.tasks[2], 0).earlyStart).toBe(5);
         expect(cp.lookUpTask(cycle.tasks[2], 0).earlyFinish).toBe(10);
         expect(cp.cycleTime).toBe(10);
+        expect(cp.planUntil).toBe(10);
     });
+
 });
